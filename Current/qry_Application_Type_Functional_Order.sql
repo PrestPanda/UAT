@@ -1,0 +1,4 @@
+SELECT tbl_Application_Type_Functional.ID, tbl_Application_Type_Functional.Name
+FROM tbl_Application_Type_Functional
+ORDER BY tbl_Application_Type_Functional.Order;
+
