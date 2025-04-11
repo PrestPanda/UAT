@@ -4,48 +4,45 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 Private Const strRepoPath As String = "C:\Users\Prest\Desktop\JCs Ultimate Access Tool\Versions\Current\"
 
+Dim Log As New clsLog
+
 Dim objShell As Object
 
 Public Sub CommitPushCurrentComponents(strCommitMessage As String)
 
     StagingBranch_AddAll
-    Commit "Es hat geklappt."
+    Commit strCommitMessage
     Push
-    
-'    Call RunCmdGit("cd /d """ & strRepoPath & """ && git add .")
-'
-'    If strCommitMessage = "" Then
-'        Call RunCmdGit("cd /d """ & strRepoPath & """ && git commit --allow-empty-message -m """"")
-'    Else
-'        Call RunCmdGit("cd /d """ & strRepoPath & """ && git commit -m """ & strCommitMessage & """")
-'    End If
-'
-'    Call RunCmdGit("cd /d """ & strRepoPath & """ && git push origin master")
 
 End Sub
 
 Private Sub StagingBranch_AddAll()
 
-    RunCommand "cd /d """ & strRepoPath & """ && git add ."
+    RunCommand "add ."
+    Log.WriteLine "GIT - Staging Branch - All Added"
 
 End Sub
 Private Sub Commit(strCommitMessage As String)
 
      If strCommitMessage = "" Then
-        RunCommand "cd /d """ & strRepoPath & """ && git commit --allow-empty-message -m """""
+        RunCommand "commit --allow-empty-message -m """""
     Else
-        RunCommand "cd /d """ & strRepoPath & """ && git commit -m """ & strCommitMessage & """"
+        RunCommand "commit -m """ & strCommitMessage & """"
     End If
+
+    Log.WriteLine "GIT - Comitted"
 
 End Sub
 Private Sub Push()
 
-    RunCommand "cd /d """ & strRepoPath & """ && git push origin master"
+    RunCommand "push origin master"
+    
+    Log.WriteLine "GIT - Pushed"
 
 End Sub
-Private Sub RunCommand(strFullCommand As String)
+Private Sub RunCommand(strCommand As String)
 
-    objShell.Run "cmd.exe /c " & strFullCommand, 1, True
+    objShell.Run "cmd.exe /c " & "cd /d """ & strRepoPath & """ && git " & strCommand, 1, True
 
 End Sub
 
