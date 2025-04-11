@@ -86,7 +86,7 @@ Public Sub ExportAllComponents()
         ExportQuerySQL strName, strCurrentFile
     Next objQuery
 
-    Log.WriteLine vbCrLf & "Export abgeschlossen: " & vbCrLf & _
+    Log.WriteLine vbCrLf & vbCrLf & "Export abgeschlossen: " & vbCrLf & _
                     "Export_" & strTimeStamp & vbCrLf & _
                     "abgelegt unter: " & vbCrLf & _
                     strBasePath
