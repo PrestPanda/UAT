@@ -299,3 +299,8 @@ Public Function Get_Message_Welcome_User(strUserName As String) As String
     Get_Message_Welcome_User = "Willkommen, " & strUserName & "!" & vbCrLf & _
                         "Heute ist " & Format(Date, "dddd, dd. mmmm yyyy") & "." & vbCrLf
 End Function
+Public Function Get_Message_Form_Opened(strFormName As String) As String
+
+    Get_Message_Form_Opened = "Formular " & strFormName & " wurde geöffnet."
+
+End Function

@@ -1,6 +1,8 @@
 Option Compare Database
 Option Explicit
 
+Dim Log As New clsLog
+
 Public Sub ExportAllComponents()
 
     ' Exportiert alle Module, Klassen, Formulare, Berichte und Abfragen in zwei Verzeichnisse:
@@ -17,6 +19,8 @@ Public Sub ExportAllComponents()
     Dim objReport As AccessObject
     Dim objQuery As AccessObject
     Dim strName As String
+    
+    Log.WriteLine "Der Komponentenexport wurde gestartet."
 
     strBasePath = "C:\Users\Prest\Desktop\JCs Ultimate Access Tool\Versions\"  ' Basisverzeichnis
     strTimeStamp = Format(Now, "yyyy-mm-dd_hh-nn")
@@ -82,7 +86,9 @@ Public Sub ExportAllComponents()
         ExportQuerySQL strName, strCurrentFile
     Next objQuery
 
-    MsgBox "Export abgeschlossen: " & vbCrLf & strExportPath & vbCrLf & "und 'Current'-Ordner aktualisiert.", vbInformation
+    Log.WriteLine "Export abgeschlossen: " & vbCrLf & _
+                    strExportPath & vbCrLf & "und 'Current'-Ordner aktualisiert."
+
 
 End Sub
 

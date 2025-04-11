@@ -236,7 +236,7 @@ Public Sub DB_Activate()
 End Sub
 Public Function DB_Check() As Boolean
 
-    If Isnull(dlookup("ID", "tbl_Component_Form", "ID =" & lngID)) = False Then
+    If IsNull(dlookup("ID", "tbl_Component_Form", "ID =" & lngID)) = False Then
         DB_Check = True
     Else
         DB_Check = False

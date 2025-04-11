@@ -55,6 +55,17 @@ Public Sub WriteEmptyLine()
     ' Fügt eine leere Zeile hinzu
     Forms(c_strForm_Log).txtLog.value = Forms(c_strForm_Log).txtLog.value & vbCrLf
 End Sub
+Public Sub Write_Application_WelcomeMessage(strApplicationName As String)
+
+    WriteLine "Die Anwendung " & strApplicationName & " wurde gestartet. "
+
+End Sub
+Public Sub Write_Form_Opened(strFormName As String)
+
+    WriteLine Writing.Get_Message_Form_Opened(strFormName)
+
+End Sub
+
 Private Function Get_WrapLine(strLineText As String) As String
  
     Get_WrapLine = Writing.Get_Timestamp() & " " & Writing.Get_Log_Prefix_ByType(ptInfo) & " " & strLineText
