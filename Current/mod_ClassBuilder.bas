@@ -360,3 +360,8 @@ Sub ClassBuild_Application_Part()
     
 
 End Sub
+Public Function Get_StandardProperties() As Variant
+
+    
+
+End Function

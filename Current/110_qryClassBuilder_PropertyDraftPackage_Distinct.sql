@@ -1,0 +1,4 @@
+SELECT DISTINCT [110_tblClassBuilder_Property_Draft].Package_Name
+FROM 110_tblClassBuilder_Property_Draft
+ORDER BY [110_tblClassBuilder_Property_Draft].Package_Name;
+
