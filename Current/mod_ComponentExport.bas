@@ -89,7 +89,7 @@ Public Sub ExportAllComponents()
     Log.WriteLine vbCrLf & vbCrLf & "Export abgeschlossen: " & vbCrLf & _
                     "Export_" & strTimeStamp & vbCrLf & _
                     "abgelegt unter: " & vbCrLf & _
-                    strBasePath
+                    strBasePath & vbCrLf
     Log.WriteLine "'Current'-Ordner aktualisiert."
     Log.WriteEmptyLine
 
