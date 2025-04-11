@@ -87,7 +87,10 @@ Public Sub ExportAllComponents()
     Next objQuery
 
     Log.WriteLine "Export abgeschlossen: " & vbCrLf & _
-                    strExportPath & vbCrLf & "und 'Current'-Ordner aktualisiert."
+                    "Export_" & strTimeStamp & vbCrLf & _
+                    "abgelegt unter: " & vbCrLf & _
+                    strBasePath
+    Log.WriteLine "'Current'-Ordner aktualisiert."
 
 
 End Sub
