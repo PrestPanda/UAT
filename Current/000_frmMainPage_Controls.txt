@@ -1,0 +1,6 @@
+Form: 000_frmMainPage
+------------------------------------
+Name: cmdOpenClassBuilder	Typ: CommandButton
+Name: cmdExportComponents	Typ: CommandButton
+Name: txtCommitMessage	Typ: TextBox
+Name: Bezeichnungsfeld41	Typ: Label
