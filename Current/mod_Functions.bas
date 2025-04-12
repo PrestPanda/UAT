@@ -114,6 +114,21 @@ Public Function Get_Listbox_Selected(objListBox As Listbox) As Variant
     
 
 End Function
+Public Sub ClearListBoxEntries( _
+    strFormName As String, _
+    objListBox As Object)
+
+    ' Löscht alle Einträge einer ListBox mit RowSourceType "Value List" auf dem angegebenen Formular
+
+    
+    If Not CurrentProject.AllForms(strFormName).IsLoaded Then Exit Sub
+
+    With Forms(strFormName).Controls(objListBox.Name)
+        If .RowSourceType = "Value List" Then .RowSource = ""
+    End With
+
+End Sub
+
 'ListBox
 'Herkunftstyp: Wertliste
 'Mehrfachauswahl: Einzeln

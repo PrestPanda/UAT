@@ -17,6 +17,36 @@ End Enum
 
 Private Sub cmdAddMethod_Click()
 
+    Dim strVisability As String
+    Dim strType As String
+
+    If optMethodAddPrivate = False And optMethodAddPublic = False Then
+        MsgBox "Bitte legen Sie die Sichbarkeit der Methode fest."
+        Exit Sub
+    End If
+    
+    If optMethodAddTypeFunction = False And optMethodAddTypeSub = False Then
+        MsgBox "Bitte legen Sie den Typ der Methode fest."
+    End If
+    
+    If txtAddMethodName <> "" Then
+    
+        If optMethodAddPrivate = True Then strVisability = "Private"
+        If optMethodAddPublic = True Then strVisability = "Public"
+        
+        If optMethodAddTypeFunction = True Then strType = "Function"
+        If optMethodAddTypeSub = True Then strType = "Sub"
+
+        
+         lstPreviewMethods.AddItem txtAddMethodName.value & ";" & _
+            strType & ";" & strVisability
+            
+        txtAddMethodName.value = ""
+        ApplyDefaultSettings
+    Else
+        MsgBox "Es wurde kein Name für die Methode vergeben."
+    End If
+
 End Sub
 
 Private Sub cmdAddProperty_Click()
@@ -38,21 +68,43 @@ Private Sub cmdAddProperty_Click()
 
 End Sub
 
+Private Sub cmdCreateClass_Click()
+'TO-DO: Klasse erstellen
+'
+
+
+
+End Sub
 
 Private Sub Form_Load()
 
     DisableAllPages
     pagClassData.SetFocus
     Load_Packages
+    ApplyDefaultSettings
     
     lstPreviewProperties.ColumnCount = 2
     lstPreviewMethods.ColumnCount = 3
     lstPackages.ColumnCount = 1
     
+    ClearListBoxEntries Me.Name, lstPreviewMethods
+    ClearListBoxEntries Me.Name, lstPreviewProperties
+    
     UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
     UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
     
 
+End Sub
+Private Sub ApplyDefaultSettings()
+
+    txtAddPropertyName = ""
+    txtAddMethodName = ""
+    txtClassName = ""
+    
+    optMethodAddTypeSub = False
+    optMethodAddTypeFunction = False
+    optMethodAddPrivate = False
+    optMethodAddPublic = False
 End Sub
 Private Sub DisableAllPages()
 
@@ -60,13 +112,6 @@ Private Sub DisableAllPages()
 
 End Sub
 'Seite 1 - Klassendaten
-
-Private Sub cmdConfirm_Click()
-
-    Me.pagDraft.Visible = True
-    regSteps = 1
-
-End Sub
 Private Sub Load_Packages()
 
       Dim intRow As Long
@@ -176,8 +221,6 @@ Private Sub lstPackages_AfterUpdate()
             
                 Loop While rcsMethodsCurrentPackage.EOF = False
                 
-                cmdAddMethod.a
-                
             End If
         
         Next intCounterArray
@@ -197,25 +240,19 @@ Public Sub Listbox_Clear(objListBox As Access.Listbox)
     End If
 
 End Sub
+
+
 Private Sub cmdPreviewMethod_MoveDown_Click()
-
     ListBox_Item_Move lstPreviewMethods, Down
-
 End Sub
 Private Sub cmdPreviewMethod_MoveUp_Click()
-
     ListBox_Item_Move lstPreviewMethods, Up
-
 End Sub
 Private Sub cmdPreviewProperty_MoveDown_Click()
-
     ListBox_Item_Move lstPreviewProperties, Down
-
 End Sub
 Private Sub cmdPreviewProperty_MoveUp_Click()
-
     ListBox_Item_Move lstPreviewProperties, Up
-
 End Sub
 Public Sub ListBox_Item_Move(objListBox As Listbox, Direction As enuDirection)
 
@@ -302,27 +339,18 @@ Public Sub ListBox_Item_Move(objListBox As Listbox, Direction As enuDirection)
     
 End Sub
 
-
+'#################################### Listbox - Auswahl #############################################
 Private Sub lstPreviewMethods_Click()
-
     UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-
 End Sub
-
 Private Sub lstPreviewMethods_GotFocus()
-
     UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-
 End Sub
 Private Sub lstPreviewProperties_Click()
-    
     UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-
 End Sub
 Private Sub lstPreviewProperties_GotFocus()
-
     UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-
 End Sub
 
 Public Sub UpdateListBoxNavigationButtons( _
@@ -360,5 +388,35 @@ Public Sub UpdateListBoxNavigationButtons( _
 
 End Sub
 
+Private Sub optMethodAddPrivate_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddPrivate, optMethodAddPublic
+End Sub
+Private Sub optMethodAddPublic_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddPublic, optMethodAddPrivate
+End Sub
+Private Sub optMethodAddTypeFunction_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddTypeFunction, optMethodAddTypeSub
+End Sub
+Private Sub optMethodAddTypeSub_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddTypeSub, optMethodAddTypeFunction
+End Sub
+Public Sub SyncOptionFields( _
+    strFormName As String, _
+    objChangedOption As Object, _
+    objOtherOption As Object)
 
+    ' Wenn das geänderte Optionsfeld aktiviert wurde,
+    ' wird das andere automatisch deaktiviert
+
+    
+    Dim frm As Access.Form
+    Set frm = Forms(strFormName)
+
+    If frm.Controls(objChangedOption.Name).value = True Then
+        frm.Controls(objOtherOption.Name).value = False
+    Else
+        frm.Controls(objOtherOption.Name).value = True
+    End If
+
+End Sub
 
