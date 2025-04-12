@@ -304,3 +304,53 @@ Public Function Get_Message_Form_Opened(strFormName As String) As String
     Get_Message_Form_Opened = "Formular " & strFormName & " wurde geöffnet."
 
 End Function
+
+
+Public Function FormatArrayAsTable(varArray As Variant) As String
+
+    ' Formatiert ein 1D- oder 2D-Array als Text-Tabelle und gibt den gesamten Text als String zurück
+
+    
+    Dim strResult As String
+    Dim lngRow As Long
+    Dim lngCol As Long
+    Dim lngRows As Long
+    Dim lngCols As Long
+    Dim strValue As String
+
+    On Error GoTo Handle1D
+    lngRows = UBound(varArray, 1)
+    lngCols = UBound(varArray, 2)
+
+    ' 2D-Array
+    For lngRow = 1 To lngRows
+        For lngCol = 1 To lngCols
+            strValue = CStr(varArray(lngRow, lngCol))
+            strResult = strResult & PadString(strValue, 20)
+        Next lngCol
+        strResult = strResult & vbCrLf
+    Next lngRow
+
+    FormatArrayAsTable = strResult
+    Exit Function
+
+Handle1D:
+    ' 1D-Array
+    On Error GoTo 0
+    For lngRow = LBound(varArray) To UBound(varArray)
+        strResult = strResult & CStr(varArray(lngRow)) & vbCrLf
+    Next lngRow
+
+    FormatArrayAsTable = strResult
+
+End Function
+
+
+Private Function PadString(strText As String, intWidth As Integer) As String
+
+    ' Füllt einen String rechts mit Leerzeichen auf feste Breite
+
+    
+    PadString = Left(strText & Space(intWidth), intWidth)
+
+End Function

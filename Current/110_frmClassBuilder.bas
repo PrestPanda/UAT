@@ -10,17 +10,48 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
+Public Enum enuDirection
+    Up
+    Down
+End Enum
+
+Private Sub cmdAddMethod_Click()
+
+End Sub
+
 Private Sub cmdAddProperty_Click()
 
+    If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
+    
+        lstPreviewProperties.AddItem txtAddPropertyName.value & ";" & _
+            cmbAddPropertyType.Column(1)
+            
+        txtAddPropertyName.value = ""
+        cmbAddPropertyType.value = ""
+        
+    Else
+        
+        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
+        
+    End If
 
 
 End Sub
+
 
 Private Sub Form_Load()
 
     DisableAllPages
     pagClassData.SetFocus
     Load_Packages
+    
+    lstPreviewProperties.ColumnCount = 2
+    lstPreviewMethods.ColumnCount = 3
+    lstPackages.ColumnCount = 1
+    
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    
 
 End Sub
 Private Sub DisableAllPages()
@@ -76,13 +107,7 @@ ExitSub:
 
 End Sub
 
-'ListBox
-'Herkunftstyp: Wertliste
-'Mehrfachauswahl: Einzeln
-Private Sub Update_Previews()
 
-
-End Sub
 Private Sub lstPackages_AfterUpdate()
 
 
@@ -151,6 +176,8 @@ Private Sub lstPackages_AfterUpdate()
             
                 Loop While rcsMethodsCurrentPackage.EOF = False
                 
+                cmdAddMethod.a
+                
             End If
         
         Next intCounterArray
@@ -170,4 +197,168 @@ Public Sub Listbox_Clear(objListBox As Access.Listbox)
     End If
 
 End Sub
+Private Sub cmdPreviewMethod_MoveDown_Click()
+
+    ListBox_Item_Move lstPreviewMethods, Down
+
+End Sub
+Private Sub cmdPreviewMethod_MoveUp_Click()
+
+    ListBox_Item_Move lstPreviewMethods, Up
+
+End Sub
+Private Sub cmdPreviewProperty_MoveDown_Click()
+
+    ListBox_Item_Move lstPreviewProperties, Down
+
+End Sub
+Private Sub cmdPreviewProperty_MoveUp_Click()
+
+    ListBox_Item_Move lstPreviewProperties, Up
+
+End Sub
+Public Sub ListBox_Item_Move(objListBox As Listbox, Direction As enuDirection)
+
+    ' Verschiebt die markierte Zeile in einer mehrspaltigen Access-ListBox (Value List) um eine Position
+    ' Unterstützt beliebig viele Spalten – funktioniert nur mit RowSourceType = "Value List"
+
+    
+    Dim intCols As Integer
+    Dim intRows As Integer
+    Dim intIndex As Integer
+    Dim varData() As Variant
+    Dim i As Long, j As Long
+    Dim strRowSource As String
+    Dim varTemp() As String
+
+    If objListBox.RowSourceType <> "Value List" Then
+        MsgBox "Diese Funktion unterstützt nur ListBoxen mit RowSourceType = 'Value List'", vbExclamation
+        Exit Sub
+    End If
+
+    intCols = objListBox.ColumnCount
+    intRows = objListBox.ListCount
+
+    ' Auswahl finden
+    intIndex = -1
+    For i = 0 To intRows - 1
+        If objListBox.Selected(i) Then
+            intIndex = i
+            Exit For
+        End If
+    Next i
+
+    If intIndex = -1 Then Exit Sub ' nichts ausgewählt
+    If Direction = enuDirection.Up And intIndex = 0 Then Exit Sub
+    If Direction = enuDirection.Down And intIndex = intRows - 1 Then Exit Sub
+
+    ' Daten in Array kopieren
+    ReDim varData(0 To intRows - 1, 0 To intCols - 1)
+    For i = 0 To intRows - 1
+        For j = 0 To intCols - 1
+            varData(i, j) = objListBox.Column(j, i)
+        Next j
+    Next i
+
+    ' Zeilen tauschen
+    Dim rowA As Long, rowB As Long
+    If Direction = enuDirection.Up Then
+        rowA = intIndex
+        rowB = intIndex - 1
+    Else
+        rowA = intIndex
+        rowB = intIndex + 1
+    End If
+
+    Dim temp As Variant
+    For j = 0 To intCols - 1
+        temp = varData(rowA, j)
+        varData(rowA, j) = varData(rowB, j)
+        varData(rowB, j) = temp
+    Next j
+
+    ' Neue RowSource erzeugen
+    strRowSource = ""
+    For i = 0 To intRows - 1
+        ReDim varTemp(0 To intCols - 1)
+        For j = 0 To intCols - 1
+            varTemp(j) = Nz(varData(i, j), "")
+        Next j
+        strRowSource = strRowSource & Join(varTemp, ";") & ";"
+    Next i
+
+    ' Letztes Semikolon entfernen
+    If Right(strRowSource, 1) = ";" Then
+        strRowSource = Left(strRowSource, Len(strRowSource) - 1)
+    End If
+
+    objListBox.RowSource = strRowSource
+
+    ' Neuen Eintrag wieder markieren
+    objListBox.Selected(rowB) = True
+    
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    
+End Sub
+
+
+Private Sub lstPreviewMethods_Click()
+
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+
+End Sub
+
+Private Sub lstPreviewMethods_GotFocus()
+
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+
+End Sub
+Private Sub lstPreviewProperties_Click()
+    
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+
+End Sub
+Private Sub lstPreviewProperties_GotFocus()
+
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+
+End Sub
+
+Public Sub UpdateListBoxNavigationButtons( _
+    strFormName As String, _
+    objListBox As Object, _
+    objButtonUp As Object, _
+    objButtonDown As Object)
+
+    ' Aktiviert oder deaktiviert die Buttons zum Verschieben eines Listbox-Eintrags je nach Auswahlposition
+    ' Der Zugriff auf die Steuerelemente erfolgt direkt über Forms(strFormName).Controls("...").Enabled
+
+    
+    Dim intIndex As Long
+    Dim intCount As Long
+
+    If Not CurrentProject.AllForms(strFormName).IsLoaded Then Exit Sub
+
+    intCount = Forms(strFormName).Controls(objListBox.Name).ListCount
+    intIndex = Forms(strFormName).Controls(objListBox.Name).ListIndex + 1
+
+    ' Wenn nichts ausgewählt oder Liste leer ? Buttons deaktivieren
+    If intCount = 0 Or Forms(strFormName).Controls(objListBox.Name).ListIndex = -1 Then
+        Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
+        Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
+        Exit Sub
+    End If
+
+    ' Standardmäßig beide aktivieren
+    Forms(strFormName).Controls(objButtonUp.Name).Enabled = True
+    Forms(strFormName).Controls(objButtonDown.Name).Enabled = True
+
+    ' Randposition prüfen
+    If intIndex = 1 Then Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
+    If intIndex = intCount Then Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
+
+End Sub
+
+
 

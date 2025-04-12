@@ -34,7 +34,7 @@ Private Sub cmdExportComponents_Click()
     
     Set Coding_Git = Nothing
     
-    DoCmd.OpenForm Me.Name
+    DoCmd.OpenForm "000_frmMainPage"
 
 End Sub
 

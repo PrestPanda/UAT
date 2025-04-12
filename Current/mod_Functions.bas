@@ -114,3 +114,6 @@ Public Function Get_Listbox_Selected(objListBox As Listbox) As Variant
     
 
 End Function
+'ListBox
+'Herkunftstyp: Wertliste
+'Mehrfachauswahl: Einzeln
