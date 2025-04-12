@@ -19,7 +19,7 @@ Sub AddPropertyDraft_Tracking()
 
     Dim rcsProperty_Tracking As Recordset
     
-    rcsProperty_Standard.OpenRecordset _
+    rcsProperty_Tracking.OpenRecordset _
     ("SELECT * FROM 110_tblClassBuilder_Property_Draft " & _
      "WHERE Package_Name = 'Tracking'")
      

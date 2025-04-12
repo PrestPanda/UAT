@@ -41,66 +41,67 @@ Public Property Let Description(strDescription_1 As String)
     apApplication_Part.Description = strDescription_1
 
 End Property
-Public Property Get Type_FK() As Long
-
-    Type_FK = lngType_FK
-
-End Property
-Public Property Let Type_FK(lngType_FK_1 As Long)
-
-    lngType_FK = lngType_FK_1
-
-End Property
-Public Property Get Application_Part() As clsApplication_Part
-
-    Application_Part = apApplication_Part
-
-End Property
-Public Property Set Application_Part(lngApplication_Part_1 As clsApplication_Part)
-
-    Set lngApplication_Part = lngApplication_Part_1
-
-End Property
-Public Property Get CreateTS() As Date
-
-    CreateTS = datCreateTS
-
-End Property
-Public Property Let CreateTS(datCreateTS_1 As Date)
-
-    datCreateTS = datCreateTS_1
-
-End Property
-Public Property Get LastScanTS() As Date
-
-    LastScanTS = datLastScanTS
-
-End Property
-Public Property Let LastScanTS(datLastScanTS_1 As Date)
-
-    datLastScanTS = datLastScanTS_1
-
-End Property
-Public Property Get LastUpdateTS() As Date
-
-    LastUpdateTS = datLastUpdateTS
-
-End Property
-Public Property Let LastUpdateTS(datLastUpdateTS_1 As Date)
-
-    datLastUpdateTS = datLastUpdateTS_1
-
-End Property
-Public Property Get Active() As Boolean
-
-    Active = blnActive
-
-End Property
-Public Property Let Active(blnActive_1 As Boolean)
-
-    blnActive = blnActive_1
-
-End Property
+'    Auskommentiert wegen Kompilerfehler
+'Public Property Get Type_FK() As Long
+'
+'    Type_FK = lngType_FK
+'
+'End Property
+'Public Property Let Type_FK(lngType_FK_1 As Long)
+'
+'    lngType_FK = lngType_FK_1
+'
+'End Property
+'Public Property Get Application_Part() As clsApplication_Part
+'
+'    Application_Part = apApplication_Part
+'
+'End Property
+'Public Property Set Application_Part(lngApplication_Part_1 As clsApplication_Part)
+'
+'    Set lngApplication_Part = lngApplication_Part_1
+'
+'End Property
+'Public Property Get CreateTS() As Date
+'
+'    CreateTS = datCreateTS
+'
+'End Property
+'Public Property Let CreateTS(datCreateTS_1 As Date)
+'
+'    datCreateTS = datCreateTS_1
+'
+'End Property
+'Public Property Get LastScanTS() As Date
+'
+'    LastScanTS = datLastScanTS
+'
+'End Property
+'Public Property Let LastScanTS(datLastScanTS_1 As Date)
+'
+'    datLastScanTS = datLastScanTS_1
+'
+'End Property
+'Public Property Get LastUpdateTS() As Date
+'
+'    LastUpdateTS = datLastUpdateTS
+'
+'End Property
+'Public Property Let LastUpdateTS(datLastUpdateTS_1 As Date)
+'
+'    datLastUpdateTS = datLastUpdateTS_1
+'
+'End Property
+'Public Property Get Active() As Boolean
+'
+'    Active = blnActive
+'
+'End Property
+'Public Property Let Active(blnActive_1 As Boolean)
+'
+'    blnActive = blnActive_1
+'
+'End Property
 
 'Table
 Public Property Get ID() As Long

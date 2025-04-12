@@ -13,7 +13,7 @@ Public Sub ExportToPlantUML()
     Dim strTargetFile As String
     Dim intFile As Integer
     Dim objComponent As Object
-    Dim strLine As String
+    Dim varLine As Variant
     Dim strCode As String
     Dim strComponentName As String
     Dim strComponentType As String
@@ -52,12 +52,12 @@ Public Sub ExportToPlantUML()
         Dim arrLines() As String
         arrLines = Split(strCode, vbCrLf)
 
-        For Each strLine In arrLines
+        For Each varLine In arrLines
 
             ' Public Properties
-            If strLine Like "Public * As *" Then
+            If varLine Like "Public * As *" Then
                 Dim strPropParts() As String
-                strPropParts = Split(Replace(strLine, "  ", " "), " ")
+                strPropParts = Split(Replace(varLine, "  ", " "), " ")
                 If UBound(strPropParts) >= 3 Then
                     strProperty = "+" & strPropParts(3) & " " & strPropParts(1)
                     Print #intFile, "  " & strProperty
@@ -65,12 +65,12 @@ Public Sub ExportToPlantUML()
             End If
 
             ' Public Methods
-            If strLine Like "Public Sub *" Or strLine Like "Public Function *" Then
+            If varLine Like "Public Sub *" Or varLine Like "Public Function *" Then
                 Dim strFuncParts() As String
-                strFuncParts = Split(Replace(strLine, "  ", " "), " ")
+                strFuncParts = Split(Replace(varLine, "  ", " "), " ")
                 If UBound(strFuncParts) >= 2 Then
                     strMethod = "+" & strFuncParts(2) & "() : "
-                    If InStr(1, strLine, "Function", vbTextCompare) > 0 Then
+                    If InStr(1, varLine, "Function", vbTextCompare) > 0 Then
                         strMethod = strMethod & "any"
                     Else
                         strMethod = strMethod & "void"
@@ -79,7 +79,7 @@ Public Sub ExportToPlantUML()
                 End If
             End If
 
-        Next strLine
+        Next varLine
 
         Print #intFile, "}" & vbCrLf
 

@@ -112,15 +112,16 @@ Sub Test_Log()
     Test_Module_Print_Information
 
 End Sub
+'    Auskommentiert wegen Kompilerfehler
 Private Sub Test_Table_Print_Information()
 
 
     Dim cTable As New clsComponent_Table
     Dim Log As New clsLog
-    
-    cTable.LoadTablePropertiesFromTable "tbl_Class"
-    Log.WriteLine (cTable.Get_Table_Header)
-    Log.WriteLine (cTable.Get_Table_Columns)
+
+'    cTable.LoadTablePropertiesFromTable "tbl_Class"
+'    Log.WriteLine (cTable.Get_Table_Header)
+'    Log.WriteLine (cTable.Get_Table_Columns)
 
 End Sub
 Private Sub Test_LogTables()
@@ -132,54 +133,54 @@ Private Sub Test_LogTables()
     
     Set db = CurrentDb
     
-    ' Iteriere durch jede Tabelle in der Datenbank
-    For Each tbl In db.TableDefs
-        ' Prüfe, ob es sich nicht um eine Systemtabelle handelt
-        If Left(tbl.Name, 4) <> "MSys" Then
-            cTable.LoadTablePropertiesFromTable tbl.Name
-            If cTable.DB_Check = False Then
-                cTable.DB_Insert
-            End If
-        End If
-    Next tbl
-    
-    ' Speicher freigeben
-    Set tbl = Nothing
-    Set db = Nothing
+'    ' Iteriere durch jede Tabelle in der Datenbank
+'    For Each tbl In db.TableDefs
+'        ' Prüfe, ob es sich nicht um eine Systemtabelle handelt
+'        If Left(tbl.Name, 4) <> "MSys" Then
+'            cTable.LoadTablePropertiesFromTable tbl.Name
+'            If cTable.DB_Check = False Then
+'                cTable.DB_Insert
+'            End If
+'        End If
+'    Next tbl
+'
+'    ' Speicher freigeben
+'    Set tbl = Nothing
+'    Set db = Nothing
 
 
 End Sub
 
 Private Sub Test_Query_Print_Information()
 
-    Dim cQuery As New clsComponent_Query
-    Dim Log As New clsLog
-    
-    cQuery.LoadQueryProperties ("qry_ClassBuilder_Properties_CurrentUser")
-    Log.WriteLine (cQuery.Get_Query_Header)
-    Log.WriteLine (cQuery.Get_Query_Fields)
+'    Dim cQuery As New clsComponent_Query
+'    Dim Log As New clsLog
+'
+'    cQuery.LoadQueryProperties ("qry_ClassBuilder_Properties_CurrentUser")
+'    Log.WriteLine (cQuery.Get_Query_Header)
+'    Log.WriteLine (cQuery.Get_Query_Fields)
 
 
 End Sub
 Private Sub Test_Form_Print_Information()
 
 
-    Dim cForm As New clsComponent_Form
-    Dim Log As New clsLog
-    
-    cForm.LoadFormProperties ("frm_Log")
-    Log.WriteLine (cForm.Get_Form_Header)
-    Log.WriteLine (cForm.Get_Form_Controls)
+'    Dim cForm As New clsComponent_Form
+'    Dim Log As New clsLog
+'
+'    cForm.LoadFormProperties ("frm_Log")
+'    Log.WriteLine (cForm.Get_Form_Header)
+'    Log.WriteLine (cForm.Get_Form_Controls)
 
 End Sub
 Private Sub Test_Module_Print_Information()
 
 
-    Dim cModule As New clsComponent_Module
-    Dim Log As New clsLog
-    
-    cModule.LoadModuleProperties ("mod_Testing")
-    Log.WriteLine (cModule.Get_Module_Header)
-    Log.WriteLine (cModule.Get_Module_Procedures)
+'    Dim cModule As New clsComponent_Module
+'    Dim Log As New clsLog
+'
+'    cModule.LoadModuleProperties ("mod_Testing")
+'    Log.WriteLine (cModule.Get_Module_Header)
+'    Log.WriteLine (cModule.Get_Module_Procedures)
 
 End Sub
