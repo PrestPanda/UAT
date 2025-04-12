@@ -1,7 +1,7 @@
 Option Compare Database
 Option Explicit
 
-Public Sub FillListBoxFromArray(objListbox As MSForms.Listbox, varData As Variant)
+Public Sub FillListBoxFromArray(objListBox As MSForms.Listbox, varData As Variant)
 
     ' Füllt eine Listbox mit den Einträgen aus einem Array
     ' Unterstützt sowohl 1D- als auch 2D-Arrays
@@ -13,7 +13,7 @@ Public Sub FillListBoxFromArray(objListbox As MSForms.Listbox, varData As Varian
     Dim intCols As Long
     Dim varRow() As Variant
 
-    objListbox.Clear
+    objListBox.Clear
 
     On Error GoTo ExitSub
     intRows = UBound(varData, 1)
@@ -25,9 +25,9 @@ Public Sub FillListBoxFromArray(objListbox As MSForms.Listbox, varData As Varian
         For intCol = 1 To intCols
             varRow(intCol - 1) = varData(intRow, intCol)
         Next intCol
-        objListbox.AddItem varRow(0)
+        objListBox.AddItem varRow(0)
         For intCol = 1 To intCols - 1
-            objListbox.List(objListbox.ListCount - 1, intCol) = varRow(intCol)
+            objListBox.List(objListBox.ListCount - 1, intCol) = varRow(intCol)
         Next intCol
     Next intRow
     Exit Sub
@@ -35,9 +35,9 @@ Public Sub FillListBoxFromArray(objListbox As MSForms.Listbox, varData As Varian
 ExitSub:
     ' Falls 1D-Array, wird hier weitergemacht
     On Error Resume Next
-    objListbox.Clear
+    objListBox.Clear
     For intRow = LBound(varData) To UBound(varData)
-        objListbox.AddItem varData(intRow)
+        objListBox.AddItem varData(intRow)
     Next intRow
 
 End Sub
@@ -79,7 +79,7 @@ Public Function Get_Array_FromQuery(strQueryName As String) As Variant
     Get_Array_FromQuery = varResult
 
 End Function
-Public Function Get_Listbox_Selected(objListbox As Listbox) As Variant
+Public Function Get_Listbox_Selected(objListBox As Listbox) As Variant
 
  ' Gibt alle ausgewählten Einträge einer Listbox als Array zurück
 
@@ -89,8 +89,8 @@ Public Function Get_Listbox_Selected(objListbox As Listbox) As Variant
     Dim varSelected() As Variant
 
     ' Zähle ausgewählte Elemente
-    For lngIndex = 0 To objListbox.ListCount - 1
-        If objListbox.Selected(lngIndex) Then
+    For lngIndex = 0 To objListBox.ListCount - 1
+        If objListBox.Selected(lngIndex) Then
             intSelectedCount = intSelectedCount + 1
         End If
     Next lngIndex
@@ -103,9 +103,9 @@ Public Function Get_Listbox_Selected(objListbox As Listbox) As Variant
     ReDim varSelected(0 To intSelectedCount - 1)
 
     intSelectedCount = 0
-    For lngIndex = 0 To objListbox.ListCount - 1
-        If objListbox.Selected(lngIndex) Then
-            varSelected(intSelectedCount) = objListbox.ItemData(lngIndex)
+    For lngIndex = 0 To objListBox.ListCount - 1
+        If objListBox.Selected(lngIndex) Then
+            varSelected(intSelectedCount) = objListBox.ItemData(lngIndex)
             intSelectedCount = intSelectedCount + 1
         End If
     Next lngIndex
