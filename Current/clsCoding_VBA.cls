@@ -77,6 +77,67 @@ Public Function Get_Code_Module(strClassName As String, _
 Get_Code_Module = strCode
 
 End Function
+Public Function Get_Code_Module_New(strClassName As String, Properties() As String, Methods() As String) As String
+    Dim strCode As String
+    Dim strTableName As String
+    Dim strClassModuleName As String
+    
+    strTableName = "tbl_" & strClassName
+    strClassModuleName = "cls" & strClassName
+    
+    Dim lngCounter As Long
+    
+    'To-Do: Folgende Anpassung vornehmen
+        'Erst die Daten von den Standardeigenschaften und Methoden in die Arrays einfügen
+        'Dann die Arrays sortieren und erst im Anschluss die Arrays von L bis UBound durchgehen
+    
+    Log.WriteLine "VBA Code für private Variablen wird generiert"
+    'Private Variables
+    For lngCounter = LBound(strPropertyName) To UBound(strPropertyName)
+    
+        If strCode = "" Then
+            strCode = strCode & Get_Code_Module_PrivateVariable(strPropertyName(lngCounter), strPropertyType(lngCounter))
+        Else
+            strCode = strCode & vbNewLine & _
+                Get_Code_Module_PrivateVariable(strPropertyName(lngCounter), strPropertyType(lngCounter))
+        End If
+   
+    Next
+    
+    strCode = strCode & vbNewLine
+    
+    'Properties
+    For lngCounter = LBound(strPropertyName) To UBound(strPropertyName)
+    
+        If strCode = "" Then
+            strCode = strCode & Get_Code_Module_Property(strPropertyName(lngCounter), strPropertyType(lngCounter), vPublic)
+        Else
+            strCode = strCode & vbNewLine & Get_Code_Module_Property(strPropertyName(lngCounter), strPropertyType(lngCounter), vPublic)
+        End If
+      
+    
+    Next
+    
+    strCode = strCode & vbNewLine
+    
+    
+    'Standard_Methods
+
+    strCode = strCode & Get_Code_Module_Methods_Standard(strPropertyName(), strPropertyType()) & vbNewLine
+    
+   'DB_Methods
+    
+    If blnCreateDBMethods = True Then
+
+        strCode = strCode & Get_Code_Module_Methods_DB("tbl_" & strClassName, strPropertyName(), strPropertyType())
+    End If
+    
+    
+    
+    'Erstelle Property
+Get_Code_Module = strCode
+
+End Function
 
 
 '-------------------------------------------- CODE - Module - PROPERTIES -----------------------------------

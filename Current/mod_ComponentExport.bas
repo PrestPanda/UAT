@@ -38,9 +38,6 @@ Public Sub ExportAllComponents()
     
         strName = objComponent.Name
         
-'        If Left(strName, 4) = "Form" Then
-            Debug.Print strName
-'        End If
         
         Select Case objComponent.Type
             Case 1 ' Modul

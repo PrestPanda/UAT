@@ -15,70 +15,11 @@ Public Enum enuDirection
     Down
 End Enum
 
-Private Sub cmdAddMethod_Click()
-
-    Dim strVisability As String
-    Dim strType As String
-
-    If optMethodAddPrivate = False And optMethodAddPublic = False Then
-        MsgBox "Bitte legen Sie die Sichbarkeit der Methode fest."
-        Exit Sub
-    End If
-    
-    If optMethodAddTypeFunction = False And optMethodAddTypeSub = False Then
-        MsgBox "Bitte legen Sie den Typ der Methode fest."
-    End If
-    
-    If txtAddMethodName <> "" Then
-    
-        If optMethodAddPrivate = True Then strVisability = "Private"
-        If optMethodAddPublic = True Then strVisability = "Public"
-        
-        If optMethodAddTypeFunction = True Then strType = "Function"
-        If optMethodAddTypeSub = True Then strType = "Sub"
-
-        
-         lstPreviewMethods.AddItem txtAddMethodName.value & ";" & _
-            strType & ";" & strVisability
-            
-        txtAddMethodName.value = ""
-        ApplyDefaultSettings
-    Else
-        MsgBox "Es wurde kein Name für die Methode vergeben."
-    End If
-
-End Sub
-
-Private Sub cmdAddProperty_Click()
-
-    If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
-    
-        lstPreviewProperties.AddItem txtAddPropertyName.value & ";" & _
-            cmbAddPropertyType.Column(1)
-            
-        txtAddPropertyName.value = ""
-        cmbAddPropertyType.value = ""
-        
-    Else
-        
-        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
-        
-    End If
-
-
-End Sub
-
-Private Sub cmdCreateClass_Click()
-'TO-DO: Klasse erstellen
-'
-
-
-
-End Sub
+Dim arrSelectedPackages As String
 
 Private Sub Form_Load()
 
-    DisableAllPages
+    
     pagClassData.SetFocus
     Load_Packages
     ApplyDefaultSettings
@@ -95,6 +36,92 @@ Private Sub Form_Load()
     
 
 End Sub
+Private Sub cmdAddProperty_Click()
+
+    If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
+     
+            If ListBox_ContainsValue(Me.Name, lstPreviewProperties, 0, txtAddPropertyName.value) = False Then
+
+                lstPreviewProperties.AddItem txtAddPropertyName.value & ";" & _
+                    cmbAddPropertyType.Column(1)
+                    
+                txtAddPropertyName.value = ""
+                cmbAddPropertyType.value = ""
+            Else
+            
+                MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
+            
+            End If
+        
+    Else
+        
+        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
+        
+    End If
+
+
+End Sub
+Private Sub cmdAddMethod_Click()
+
+    Dim strVisability As String
+    Dim strType As String
+
+    If optMethodAddPrivate = False And optMethodAddPublic = False Then
+        MsgBox "Bitte legen Sie die Sichbarkeit der Methode fest."
+        Exit Sub
+    End If
+    
+    If optMethodAddTypeFunction = False And optMethodAddTypeSub = False Then
+        MsgBox "Bitte legen Sie den Typ der Methode fest."
+    End If
+    
+    If txtAddMethodName <> "" Then
+    
+        If ListBox_ContainsValue(Me.Name, lstPreviewMethods, 0, txtAddMethodName) = False Then
+    
+            If optMethodAddPrivate = True Then strVisability = "Private"
+            If optMethodAddPublic = True Then strVisability = "Public"
+            
+            If optMethodAddTypeFunction = True Then strType = "Function"
+            If optMethodAddTypeSub = True Then strType = "Sub"
+    
+            
+             lstPreviewMethods.AddItem txtAddMethodName.value & ";" & _
+                strType & ";" & strVisability
+                
+            txtAddMethodName.value = ""
+            ApplyDefaultSettings
+        
+        Else
+        
+            MsgBox "Eine Methode mit diesem Namen wurde bereits hinzugefügt."
+        
+        End If
+        
+    Else
+    
+        MsgBox "Es wurde kein Name für die Methode vergeben."
+    
+    End If
+
+End Sub
+Private Sub cmdCreateClass_Click()
+'TO-DO: Klasse erstellen
+'
+    'Eigenschaften aus der Listbox in ein Array laden
+    'Methoden aus der Listbox in ein Array laden
+
+
+    Dim Properties() As String
+    Dim Methods() As String
+    
+    Properties = ListBox_Get_Array(Me.Name, lstPreviewProperties)
+    Methods = ListBox_Get_Array(Me.Name, lstPreviewMethods)
+    
+    Class_Build txtClassName, Properties(),
+
+
+End Sub
 Private Sub ApplyDefaultSettings()
 
     txtAddPropertyName = ""
@@ -106,12 +133,6 @@ Private Sub ApplyDefaultSettings()
     optMethodAddPrivate = False
     optMethodAddPublic = False
 End Sub
-Private Sub DisableAllPages()
-
-    pagDraft.Visible = False
-
-End Sub
-'Seite 1 - Klassendaten
 Private Sub Load_Packages()
 
       Dim intRow As Long
@@ -151,8 +172,6 @@ ExitSub:
     Next intRow
 
 End Sub
-
-
 Private Sub lstPackages_AfterUpdate()
 
 
@@ -163,10 +182,9 @@ Private Sub lstPackages_AfterUpdate()
     Dim PreviewProperties() As Variant
     Dim lngPackageID As Long
     
-    lstPreviewProperties.RowSource = ""
     
-    Listbox_Clear lstPreviewMethods
-    Listbox_Clear lstPreviewProperties
+    Listbox_Clear Me.Name, lstPreviewMethods
+    Listbox_Clear Me.Name, lstPreviewProperties
     
     Selected = Get_Listbox_Selected(lstPackages)
 
@@ -228,20 +246,6 @@ Private Sub lstPackages_AfterUpdate()
     End If
 
 End Sub
-Public Sub Listbox_Clear(objListBox As Access.Listbox)
-
-    ' Leert eine Access-Listbox unabhängig vom aktuellen RowSourceType
-
-    
-    If objListBox.RowSourceType = "Table/Query" Then
-        objListBox.RowSource = ""
-    ElseIf objListBox.RowSourceType = "Value List" Then
-        objListBox.RowSource = ""
-    End If
-
-End Sub
-
-
 Private Sub cmdPreviewMethod_MoveDown_Click()
     ListBox_Item_Move lstPreviewMethods, Down
 End Sub
@@ -419,4 +423,25 @@ Public Sub SyncOptionFields( _
     End If
 
 End Sub
+Public Function GetSelectedValues(objListBox As Listbox) As String()
+    Dim i As Long, n As Long
+    Dim arr() As String
+
+    ReDim arr(0 To 0)
+    n = -1
+
+    For i = 0 To objListBox.ListCount - 1
+        If objListBox.Selected(i) Then
+            n = n + 1
+            ReDim Preserve arr(0 To n)
+            arr(n) = objListBox.ItemData(i)
+        End If
+    Next i
+
+    If n = -1 Then
+        GetSelectedValues = Split("") ' leeres Array
+    Else
+        GetSelectedValues = arr
+    End If
+End Function
 
