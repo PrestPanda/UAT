@@ -14,12 +14,12 @@ Public Enum enuCoding_Visibility
     vPublic
 
 End Enum
-Public Enum enuCoding_Variable_Types
+Public Enum enuCoding_DataTypes
 
     vtNoType
     vtString
     vtStringLong
-    vtlong
+    vtLong
     vtDouble
     vtBoolean
     vtDate
@@ -36,120 +36,213 @@ Public Enum enuCoding_Method_Types
 End Enum
 
 
-Public Sub ClassModule_CreateNew(strClassName As String, Optional strVBACode As String)
-'Creates a new class module and inserts VBA Code
-
-    Dim objVBComp As New VBComponent
 
 
-    Set objVBComp = Application.VBE.ActiveVBProject.VBComponents.Add(vbext_ct_ClassModule)
-    objVBComp.CodeModule.AddFromString strVBACode
+Public Function Get_Variable_DimensionStatement_ByEnum(Visibility As enuCoding_Visibility, strName As String, _
+    DataType As enuCoding_DataTypes) As String
+'Refactored
+'Returns a dimension statement for a variable based on visability and data type
 
+    Get_Variable_DimensionStatement = Get_Visibility_AsString_ByEnum(Visibility) & " " & _
+                                        Get_Variable_Name_AsString_ByEnum(strName, DataType) & " as " & _
+                                        Get_Variable_Type_AsString_ByEnum(DataType)
 
-    Log.WriteLine "Bitte benenne die Klasse '" & objVBComp.Name & "' in '" & strClassName & "' um."
+End Function
+Public Function Get_Variable_DimensionStatement_ByString(strVisibility As String, strName As String, _
+    strDataType As String) As String
+'Refactored
+'Returns a dimension statement for a variable based on visability and data type
 
+    Get_Variable_DimensionStatement = strVisibility & " " & _
+                                        Get_Variable_Name_AsString_ByString(strName, strDataType) & " as " & _
+                                        strDataType
 
-End Sub
-Public Function Get_Method_Type(MethodType As enuCoding_Method_Types) As String
+End Function
+Public Function Get_Variable_Name_AsString_ByEnum( _
+    strName As String, _
+    DataType As enuCoding_DataTypes) As String
+'Refactored
+'Returns the name of a Variable with variable type prefix
+
+    Get_Variable_Name = Get_Variable_Prefix_AsString_ByEnum(DataType) & strName
+
+End Function
+Public Function Get_Variable_Name_AsString_ByString( _
+    strName As String, _
+    strDataType As String) As String
+'Refactored
+'Returns the name of a Variable with variable type prefix
+
+    Get_Variable_Name_AsString_ByString = Get_Variable_Prefix_AsString_ByString(strDataType) & strName
+
+End Function
+Public Function Get_Visibility_AsString_ByEnum(Visibilty As enuCoding_Visibility) As String
+'Refactored
+'Returns the visability type as string
+
+    Select Case Visibilty
+    
+        Case vPrivate
+            Get_Visibility_AsString_ByEnum = "Private"
+            
+        Case vPublic
+            Get_Visibility_AsString_ByEnum = "Public"
+            
+    End Select
+
+End Function
+Public Function Get_Visibility_AsEnum_ByString(strVisibilty As String) As enuCoding_Visibility
+'Refactored
+'Returns the visability type as enumeration
+
+    Select Case Visibilty
+    
+        Case "Private"
+            Get_Visibility_AsEnum_ByString = vPrivate
+            
+        Case "Public"
+            Get_Visibility_AsEnum_ByString = vPublic
+            
+    End Select
+
+End Function
+Public Function Get_Variable_Prefix_AsString_ByString(strDataType As String) As String
+'Refactored
+
+    Get_Variable_Prefix_AsString_ByString = _
+        Get_Variable_Prefix_AsString_ByEnum( _
+        Get_Variable_Type_AsEnum_ByString(strDataType))
+
+End Function
+
+Public Function Get_Variable_Prefix_AsString_ByEnum(VariableType As enuCoding_DataTypes) As String
+'Refactored
+'Returns the prefix of a variable with a specific data type
+
+    Select Case VariableType
+    
+        Case vtAuto
+            Get_Variable_Prefix_AsString_ByEnum = ""
+    
+        Case vtBoolean
+            Get_Variable_Prefix_AsString_ByEnum = "bln"
+        
+        Case vtDate
+            Get_Variable_Prefix_AsString_ByEnum = "dat"
+            
+        Case vtDouble
+            Get_Variable_Prefix_AsString_ByEnum = "dbl"
+            
+        Case vtLong
+            Get_Variable_Prefix_AsString_ByEnum = "lng"
+            
+        Case vtString, vtStringLong
+            Get_Variable_Prefix_AsString_ByEnum = "str"
+            
+        Case vtVariant
+            Get_Variable_Prefix_AsString_ByEnum = ""
+            
+        Case Else
+            Get_Variable_Prefix_AsString_ByEnum = ""
+            
+    End Select
+    
+
+End Function
+Public Function Get_Variable_Type_AsString_ByEnum(VariableType As enuCoding_DataTypes) As String
+'Refactored
+'Returns a string with the name of the Data Type
+
+    Select Case VariableType
+    
+        Case vtBoolean
+            Get_Variable_Type_AsString_ByEnum = "Boolean"
+        
+        Case vtDate
+            Get_Variable_Type_AsString_ByEnum = "Date"
+            
+        Case vtDouble
+            Get_Variable_Type_AsString_ByEnum = "Double"
+            
+        Case vtLong
+            Get_Variable_Type_AsString_ByEnum = "Long"
+            
+        Case vtString
+            Get_Variable_Type_AsString_ByEnum = "String"
+            
+        Case vtStringLong
+            Get_Variable_Type_AsString_ByEnum = "Long String"
+            
+        Case vtVariant
+            Get_Variable_Type_AsString_ByEnum = "Variant"
+            
+        Case vtNoType
+            Get_Variable_Type_AsString_ByEnum = ""
+    
+    End Select
+
+End Function
+Public Function Get_Variable_Type_AsEnum_ByString(strDataType As String) As enuCoding_DataTypes
+'Refactored
+'Returns
+
+    Select Case strType
+    
+        Case "Boolean"
+            Get_Variable_Type_AsEnum_ByString = vtBoolean
+        
+        Case "Date"
+            Get_Variable_Type_AsEnum_ByString = vtDate
+            
+        Case "Double"
+            Get_Variable_Type_AsEnum_ByString = vtDouble
+            
+        Case "Long"
+            Get_Variable_Type_AsEnum_ByString = vtLong
+            
+        Case "String"
+            Get_Variable_Type_AsEnum_ByString = vtString
+            
+        Case "Long String"
+            Get_Variable_Type_AsEnum_ByString = vtStringLong
+            
+        Case "Variant"
+            Get_Variable_Type_AsEnum_ByString = vtVariant
+            
+        Case Else
+            Get_Variable_Type_AsEnum_ByString = vtNoType
+    
+    End Select
+
+End Function
+Public Function Get_Method_Type_AsString_ByEnum(MethodType As enuCoding_Method_Types) As String
+'Refactored
 'Returns the type of a Method (Sub/Function)
 
     Select Case MethodType
     
         Case mtSub
-            Get_Method_Type = "Sub"
+            Get_Method_Type_AsString_ByEnum = "Sub"
             
         Case mtFunction
-            Get_Method_Type = "Function"
+            Get_Method_Type_AsString_ByEnum = "Function"
     
     End Select
 
 End Function
-Public Function Get_Variable_DimensionStatement(Visibility As enuCoding_Visibility, strName As String, _
-    VariableType As enuCoding_Variable_Types) As String
-'Returns a dimension statement for a variable based on visability and data type
+Public Function Get_Method_Type_AsEnum_ByString(strMethodType As String) As enuCoding_Method_Types
+'Refactored
+'Returns the type of a Method (Sub/Function)
 
-    Get_Variable_DimensionStatement = Get_Visibility(Visibility) & " " & _
-                                        Get_Variable_Name(strName, VariableType) & " as " & _
-                                        Get_Variable_Type(VariableType)
-
-End Function
-Public Function Get_Variable_Name(strPropertyName As String, VariableType As enuCoding_Variable_Types) As String
-'Returns the name of a Variable with variable type prefix
-
-    Get_Variable_Name = Get_Variable_Prefix(VariableType) & strPropertyName
-
-End Function
-Public Function Get_Variable_Prefix(VariableType As enuCoding_Variable_Types) As String
-'Returns the prefix of a variable with a specific data type
-
-    Select Case VariableType
+    Select Case strMethodType
     
-        Case vtBoolean
-            Get_Variable_Prefix = "bln"
-        
-        Case vtDate
-            Get_Variable_Prefix = "dat"
+        Case "Sub"
+            Get_Method_Type_AsEnum_ByString = mtSub
             
-        Case vtDouble
-            Get_Variable_Prefix = "dbl"
-            
-        Case vtlong, vtAuto
-            Get_Variable_Prefix = "lng"
-            
-        Case vtString, vtStringLong
-            Get_Variable_Prefix = "str"
-            
-        Case vtVariant
-            Get_Variable_Prefix = "var"
-            
-        Case vtNoType
-            Get_Variable_Prefix = ""
-            
-    End Select
-    
-
-End Function
-Public Function Get_Variable_Type(VariableType As enuCoding_Variable_Types) As String
-'Returns a string with the name of the Data Type
-    Select Case VariableType
-    
-        Case vtBoolean
-            Get_Variable_Type = "Boolean"
-        
-        Case vtDate
-            Get_Variable_Type = "Date"
-            
-        Case vtDouble
-            Get_Variable_Type = "Double"
-            
-        Case vtlong, vtAuto
-            Get_Variable_Type = "Long"
-            
-        Case vtString, vtStringLong
-            Get_Variable_Type = "String"
-            
-        Case vtStringLong
-            Get_Variable_Type = "Long"
-            
-        Case vtVariant
-            Get_Variable_Type = "Variant"
-            
-        Case vtNoType
-            Get_Variable_Type = ""
+        Case "Function"
+            Get_Method_Type_AsEnum_ByString = mtFunction
     
     End Select
 
 End Function
-Public Function Get_Visibility(Visibilty As enuCoding_Visibility) As String
-'Returns the visability type
-
-    Select Case Visibilty
     
-        Case vPrivate
-            Get_Visibility = "Private"
-            
-        Case vPublic
-            Get_Visibility = "Public"
-    End Select
-
-End Function

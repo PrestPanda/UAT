@@ -1,9 +1,0 @@
-Form: frm_Application_Add
-------------------------------------
-Name: Name	Typ: TextBox
-Name: Bezeichnungsfeld0	Typ: Label
-Name: Description	Typ: TextBox
-Name: Bezeichnungsfeld1	Typ: Label
-Name: cmdAdd	Typ: CommandButton
-Name: Active	Typ: CheckBox
-Name: Bezeichnungsfeld7	Typ: Label

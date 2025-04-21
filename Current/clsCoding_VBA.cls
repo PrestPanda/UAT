@@ -8,109 +8,57 @@ Option Compare Database
 
 Private Coding_SQL As New clsCoding_SQL
 Private Coding As New clsCoding
+Private Coding_VBA As New clsCoding_VBA
 Private Format As New clsFormat
 Private Log As New clsLog
 
 '--------------------------------------------Code Variable -----------------------------------
-Public Function Get_Code_Module(strClassName As String, _
-                                blnCreateStandardProperties As Boolean, _
-                                blnCreateDBMethods As Boolean, _
-                                 ByRef strPropertyName() As String, _
-                                 ByRef strPropertyType() As enuCoding_Variable_Types) As String
+
+Public Function Get_Code_ClassModule(strClassName As String, Properties() As Variant, Methods() As Variant) As String
+
     Dim strCode As String
     Dim strTableName As String
     Dim strClassModuleName As String
+    Dim lngCounter As Long
     
     strTableName = "tbl_" & strClassName
     strClassModuleName = "cls" & strClassName
+  
     
-    Dim lngCounter As Long
     
-    'To-Do: Folgende Anpassung vornehmen
-        'Erst die Daten von den Standardeigenschaften und Methoden in die Arrays einfügen
-        'Dann die Arrays sortieren und erst im Anschluss die Arrays von L bis UBound durchgehen
-    
-    Log.WriteLine "VBA Code für private Variablen wird generiert"
     'Private Variables
-    For lngCounter = LBound(strPropertyName) To UBound(strPropertyName)
+    Log.WriteLine "Code für private Variablen wird generiert."
+    
+    For lngCounter = LBound(Properties()) To UBound(Properties())
     
         If strCode = "" Then
-            strCode = strCode & Get_Code_Module_PrivateVariable(strPropertyName(lngCounter), strPropertyType(lngCounter))
+            strCode = strCode & _
+                Coding_VBA.Get_Code_PrivateVariable( _
+                    Properties(lngCounter, 1), _
+                    Properties(lngCounter, 2))
         Else
             strCode = strCode & vbNewLine & _
-                Get_Code_Module_PrivateVariable(strPropertyName(lngCounter), strPropertyType(lngCounter))
+                Coding_VBA.Get_Code_PrivateVariable _
+                    (Properties(lngCounter, 1), _
+                    Properties(lngCounter, 2))
         End If
    
     Next
+       
+    Log.WriteLine "Code generiert."
     
     strCode = strCode & vbNewLine
     
     'Properties
-    For lngCounter = LBound(strPropertyName) To UBound(strPropertyName)
+    Log.WriteLine "Code für Properties wird generiert"
+    
+    For lngCounter = LBound(Properties()) To UBound(Properties())
     
         If strCode = "" Then
-            strCode = strCode & Get_Code_Module_Property(strPropertyName(lngCounter), strPropertyType(lngCounter), vPublic)
-        Else
-            strCode = strCode & vbNewLine & Get_Code_Module_Property(strPropertyName(lngCounter), strPropertyType(lngCounter), vPublic)
-        End If
-      
-    
-    Next
-    
-    strCode = strCode & vbNewLine
-    
-    
-    'Standard_Methods
-
-    strCode = strCode & Get_Code_Module_Methods_Standard(strPropertyName(), strPropertyType()) & vbNewLine
-    
-   'DB_Methods
-    
-    If blnCreateDBMethods = True Then
-
-        strCode = strCode & Get_Code_Module_Methods_DB("tbl_" & strClassName, strPropertyName(), strPropertyType())
-    End If
-    
-    
-    
-    'Erstelle Property
-Get_Code_Module = strCode
-
-End Function
-Public Function Get_Code_Module_New(strClassName As String, Properties() As String, Methods() As String) As String
-    Dim strCode As String
-    Dim strTableName As String
-    Dim strClassModuleName As String
-    
-    strTableName = "tbl_" & strClassName
-    strClassModuleName = "cls" & strClassName
-    
-    Dim lngCounter As Long
-    
-    'To-Do: Folgende Anpassung vornehmen
-        'Erst die Daten von den Standardeigenschaften und Methoden in die Arrays einfügen
-        'Dann die Arrays sortieren und erst im Anschluss die Arrays von L bis UBound durchgehen
-    
-    Log.WriteLine "VBA Code für private Variablen wird generiert"
-    'Private Variables
-    For lngCounter = LBound(strPropertyName) To UBound(strPropertyName)
-    
-        If strCode = "" Then
-            strCode = strCode & Get_Code_Module_PrivateVariable(strPropertyName(lngCounter), strPropertyType(lngCounter))
-        Else
-            strCode = strCode & vbNewLine & _
-                Get_Code_Module_PrivateVariable(strPropertyName(lngCounter), strPropertyType(lngCounter))
-        End If
-   
-    Next
-    
-    strCode = strCode & vbNewLine
-    
-    'Properties
-    For lngCounter = LBound(strPropertyName) To UBound(strPropertyName)
-    
-        If strCode = "" Then
-            strCode = strCode & Get_Code_Module_Property(strPropertyName(lngCounter), strPropertyType(lngCounter), vPublic)
+            strCode = strCode & _
+                Get_Code_Module_Property( _
+                strPropertyName(lngCounter), _
+                strPropertyType(lngCounter), vPublic)
         Else
             strCode = strCode & vbNewLine & Get_Code_Module_Property(strPropertyName(lngCounter), strPropertyType(lngCounter), vPublic)
         End If
@@ -144,14 +92,14 @@ End Function
 
 
 '-------------------------------------------- CODE - Module - METHODS - Standard -----------------------------------
-Public Function Get_Code_Module_Methods_Standard(PropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_Code_Module_Methods_Standard(PropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
 
         Get_Code_Module_Methods_Standard = Get_Code_Module_Methods_Standard_Clear(PropertyNames(), PropertyTypes()) & vbNewLine & _
                                             Get_Code_Module_Methods_Standard_FullObjectText_Debug
 
 End Function
 
-Public Function Get_Code_Module_Methods_Standard_Clear(PropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_Code_Module_Methods_Standard_Clear(PropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
     ' Gibt einen String zurück, der Code enthält, um alle Properties des angegebenen
     ' Klassenmoduls auf einen Defaultwert zu setzen. Die Properties und deren Typen werden
     ' über die Parameter PropertyNames und PropertyTypes übergeben.
@@ -169,7 +117,7 @@ Public Function Get_Code_Module_Methods_Standard_Clear(PropertyNames() As String
         
             Case vtString, vtStringLong
                 strDefaultValue = """"""
-            Case vtlong, vtDouble, vtAuto
+            Case vtLong, vtDouble, vtAuto
                 strDefaultValue = "0"
             Case vtBoolean
                 strDefaultValue = "False"
@@ -199,7 +147,7 @@ Public Function Get_Code_Module_Methods_Standard_FullObjectText_Debug()
 End Function
 
 '-------------------------------------------- CODE - Module - METHODS - DB -----------------------------------
-Public Function Get_Code_Module_Methods_DB(strTableName As String, PropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_Code_Module_Methods_DB(strTableName As String, PropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
 
     
     Get_Code_Module_Methods_DB = Get_Code_Module_Method_DB_Activate(strTableName) & vbNewLine & _
@@ -250,7 +198,7 @@ Public Function Get_Code_Module_Method_DB_Delete(strTableName As String) As Stri
                                         , vtNoType)
 
 End Function
-Public Function Get_Code_Module_Method_DB_Insert(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_Code_Module_Method_DB_Insert(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
 
     Get_Code_Module_Method_DB_Insert = Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Insert", "", _
                                         Get_Code_Wrap_VBA_SQL_Statement( _
@@ -266,7 +214,7 @@ Public Function Get_Code_Module_Method_DB_Insert_UpdateID(strTableName As String
                                         vbNewLine
 
 End Function
-Public Function Get_Code_Module_Method_DB_Load(strTableName As String, PropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_Code_Module_Method_DB_Load(strTableName As String, PropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
 
     Dim strCode As String
     Dim intIndex As Integer
@@ -293,7 +241,7 @@ Public Function Get_Code_Module_Method_DB_Load(strTableName As String, PropertyN
      Get_Code_Module_Method_DB_Load = Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Load", "", strCode, vtNoType)
 
 End Function
-Public Function Get_Code_Module_Method_DB_Update(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_Code_Module_Method_DB_Update(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
 
     Get_Code_Module_Method_DB_Update = Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Update", "", _
                                         Get_Code_Wrap_VBA_SQL_Statement( _
@@ -303,17 +251,20 @@ Public Function Get_Code_Module_Method_DB_Update(strTableName As String, strProp
 End Function
 '-------------------------------------------- CODE - Module - SORT INPUT -----------------------------------
 
-'Sortiert die entgegengenommenen PropertyNames und Types
-Private Function Get_Code_Module_Sort_Input(strPropertyNames() As String, PropertyType As enuCoding_Variable_Types)
 
-    
-
-End Function
+'Private Function Get_Code_Module_Sort_Input(strPropertyNames() As String, PropertyType As enuCoding_DataTypes)
+''Eventuell später benötigt, aber jetzt noch nicht
+''Sortiert die entgegengenommenen PropertyNames und Types
+'
+'End Function
 
 '-------------------------------------------- CODE - Module - PRIVATE VARIABLES-----------------------------------
-Public Function Get_Code_Module_PrivateVariable(strPropertyName As String, PropertyType As enuCoding_Variable_Types) As String
+Public Function Get_Code_PrivateVariable(strName As String, strDataType As String) As String
+'Refactored
 
-    Get_Code_Module_PrivateVariable = Coding.Get_Variable_DimensionStatement(vPrivate, strPropertyName, PropertyType)
+    Get_Code_Module_PrivateVariable = _
+        Coding.Get_Variable_DimensionStatement( _
+            vPrivate, strName, strDataType)
 
 End Function
 Public Function Get_Code_Module_PrivateVariables_Standard() As String
@@ -321,7 +272,7 @@ Public Function Get_Code_Module_PrivateVariables_Standard() As String
     Get_Code_Module_PrivateVariables = Coding.Get_Variable_DimensionStatement(vPrivate, "ID", vtAuto)
 
 End Function
-Public Function Get_Code_Module_Property(strPropertyName As String, PropertyType As enuCoding_Variable_Types, Visibility As enuCoding_Visibility) As String
+Public Function Get_Code_Module_Property(strPropertyName As String, PropertyType As enuCoding_DataTypes, Visibility As enuCoding_Visibility) As String
 
     Dim strCode As String
 
@@ -362,7 +313,7 @@ End Function
 '
 'End Function
 Public Function Get_Code_Wrap_VBA_Method(Visability As enuCoding_Visibility, vtType As enuCoding_Method_Types, _
-    strMethodName As String, strParameters As String, strVBACode As String, vtReturnType As enuCoding_Variable_Types)
+    strMethodName As String, strParameters As String, strVBACode As String, vtReturnType As enuCoding_DataTypes)
     
     Dim strCode As String
    

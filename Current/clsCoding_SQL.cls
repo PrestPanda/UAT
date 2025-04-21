@@ -47,7 +47,7 @@ Public Function Format_Value(ByVal varValue As Variant) As String
         Case vtString
             Format_Value = Format_String(varValue)
             
-        Case vbDouble, vbSingle, vtlong, vbInteger, vbByte, vbCurrency
+        Case vbDouble, vbSingle, vtLong, vbInteger, vbByte, vbCurrency
             Format_Value = Format_Number(varValue)
             
         Case vbDate
@@ -65,7 +65,7 @@ Public Function Format_Value(ByVal varValue As Variant) As String
     End Select
     
 End Function
-Private Function Get_DataType(PropertyType As enuCoding_Variable_Types) As String
+Private Function Get_DataType(PropertyType As enuCoding_DataTypes) As String
     ' Wandelt den Variablentyp in den passenden SQL-Datentyp um
     Select Case PropertyType
     
@@ -75,7 +75,7 @@ Private Function Get_DataType(PropertyType As enuCoding_Variable_Types) As Strin
         Case vtStringLong
             Get_DataType = "LONGTEXT"
             
-        Case vtlong
+        Case vtLong
             Get_DataType = "INTEGER"
             
         Case vtDouble
@@ -95,14 +95,14 @@ Private Function Get_DataType(PropertyType As enuCoding_Variable_Types) As Strin
             
     End Select
 End Function
-Public Function Get_Code_Variable(varValue As Variant, varType As enuCoding_Variable_Types) As String
+Public Function Get_Code_Variable(varValue As Variant, varType As enuCoding_DataTypes) As String
     ' Erkennt den Datentyp und erzeugt VBA-Code für SQL-Insertion
     
     Select Case varType
     
         Case vtString, vtStringLong
             Format_SQL_Code = "'"" & " & varValue & " & ""'"
-        Case vtlong, vtDouble
+        Case vtLong, vtDouble
             Format_SQL_Code = "" & varValue & ""
         Case vtDate
             Format_SQL_Code = "#" & varValue & "#"
@@ -134,7 +134,7 @@ Public Function Get_DB_Delete(strTableName As String) As String
     Get_DB_Delete = "DELETE * FROM " & strTableName & " " & "WHERE ID =""" & "& lngID"
 
 End Function
-Public Function Get_DB_Insert(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_DB_Insert(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
 'Generates VBA Code for Inserting a dataset into an object
 
     Dim i As Long
@@ -164,7 +164,7 @@ Public Function Get_DB_Load(strTableName As String) As String
     Get_DB_Load = "SELECT * FROM " & strTableName
 
 End Function
-Public Function Get_DB_Update(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_Variable_Types) As String
+Public Function Get_DB_Update(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
 'Generates SQL Code for Updating a dataset in an object
 
     Dim i As Long
@@ -185,7 +185,7 @@ Public Function Get_DB_Update(strTableName As String, strPropertyNames() As Stri
 
 End Function
 Public Function Get_DB_CreateTable(strTableName As String, strPropertyNames() As String, _
-                                    PropertyTypes() As enuCoding_Variable_Types) As String
+                                    PropertyTypes() As enuCoding_DataTypes) As String
 ' Erstellt ein SQL-Statement zum Erstellen einer Tabelle
     
     Dim i As Long

@@ -42,7 +42,7 @@ Public Function ListBox_ContainsValue( _
 End Function
 Public Function ListBox_Get_Array( _
     strFormName As String, _
-    objListBox As Object) As Variant
+    objListBox As Object) As Variant()
 
     ' Gibt ein 2D-Array mit allen Einträgen der ListBox zurück (Zeilen x Spalten)
 

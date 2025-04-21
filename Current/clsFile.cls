@@ -5,50 +5,43 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
+Dim Log As New clsLog
 
-Public Sub Create_File_txt(strFileName As String, strPath As String, strContent As String)
-    ' Erstellt eine Textdatei mit dem angegebenen Namen, Pfad und Inhalt
+
+Public Enum enuFile_Type
     
+    ftcls
+    fttxt
+
+End Enum
+
+Public Sub Create_File(strFileName As String, strPath As String, strContent As String, FileType As enuFile_Type)
+
     Dim strFullPath As String
     Dim intFile As Integer
     
     ' Erstelle den vollständigen Dateipfad
-    strFullPath = strPath & strFileName & ".txt"
+    strFullPath = strPath & strFileName & Get_FileExtension_AsString_ByEnum(FileType)
     
     ' Datei öffnen (Nummer automatisch zuweisen)
     intFile = FreeFile
     Open strFullPath For Output As #intFile
-    
-    ' Inhalt in die Datei schreiben
     Print #intFile, strContent
-    
-    ' Datei schließen
     Close #intFile
     
-    ' Meldung für erfolgreiche Erstellung (optional)
-    Debug.Print "Datei erstellt: " & strFullPath
-    
+    Log.WriteLine "Datei erstellt: " & strFullPath
+
 End Sub
-Public Sub Create_File_cls(strFileName As String, strPath As String, strContent As String)
-    ' Erstellt eine Textdatei mit dem angegebenen Namen, Pfad und Inhalt
+Public Function Get_FileExtension_AsString_ByEnum(FileType As enuFile_Type)
+
+    Select Case FileType
     
-    Dim strFullPath As String
-    Dim intFile As Integer
+        Case ftcls
+            Get_FileExtension_AsString_ByEnum = ".cls"
+        
+        Case fttxt
+            Get_FileExtension_AsString_ByEnum = ".txt"
+            
+    End Select
     
-    ' Erstelle den vollständigen Dateipfad
-    strFullPath = strPath & strFileName & ".cls"
-    
-    ' Datei öffnen (Nummer automatisch zuweisen)
-    intFile = FreeFile
-    Open strFullPath For Output As #intFile
-    
-    ' Inhalt in die Datei schreiben
-    Print #intFile, strContent
-    
-    ' Datei schließen
-    Close #intFile
-    
-    ' Meldung für erfolgreiche Erstellung (optional)
-    Debug.Print "Datei erstellt: " & strFullPath
-    
-End Sub
+End Function

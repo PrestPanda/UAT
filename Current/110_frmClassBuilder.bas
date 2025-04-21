@@ -15,9 +15,13 @@ Public Enum enuDirection
     Down
 End Enum
 
+Dim Log As New clsLog
+
 Dim arrSelectedPackages As String
 
 Private Sub Form_Load()
+
+    Log.WriteLine "Class Builder geöffnet."
 
     
     pagClassData.SetFocus
@@ -36,6 +40,23 @@ Private Sub Form_Load()
     
 
 End Sub
+Private Sub Form_Close()
+
+    Log.WriteLine "Class Builder geschlossen."
+
+End Sub
+Private Sub ApplyDefaultSettings()
+
+    txtAddPropertyName = ""
+    txtAddMethodName = ""
+    txtClassName = ""
+    
+    optMethodAddTypeSub = False
+    optMethodAddTypeFunction = False
+    optMethodAddPrivate = False
+    optMethodAddPublic = False
+End Sub
+
 Private Sub cmdAddProperty_Click()
 
     If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
@@ -106,33 +127,21 @@ Private Sub cmdAddMethod_Click()
 
 End Sub
 Private Sub cmdCreateClass_Click()
-'TO-DO: Klasse erstellen
-'
-    'Eigenschaften aus der Listbox in ein Array laden
-    'Methoden aus der Listbox in ein Array laden
 
+    Dim Class As New clsClass
 
-    Dim Properties() As String
-    Dim Methods() As String
+    Dim Properties() As Variant
+    Dim Methods() As Variant
     
-    Properties = ListBox_Get_Array(Me.Name, lstPreviewProperties)
+    Properties = ListBox_Get_Array(Me.Name, Me.lstPreviewProperties)
     Methods = ListBox_Get_Array(Me.Name, lstPreviewMethods)
     
-    Class_Build txtClassName, Properties(),
-
-
-End Sub
-Private Sub ApplyDefaultSettings()
-
-    txtAddPropertyName = ""
-    txtAddMethodName = ""
-    txtClassName = ""
+    Class.Build Me.txtClassName.value, Properties(), Methods()
     
-    optMethodAddTypeSub = False
-    optMethodAddTypeFunction = False
-    optMethodAddPrivate = False
-    optMethodAddPublic = False
+
+
 End Sub
+
 Private Sub Load_Packages()
 
       Dim intRow As Long

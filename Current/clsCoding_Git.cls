@@ -2,10 +2,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-Private Const strRepoPath As String = "C:\Users\Prest\Desktop\JCs Ultimate Access Tool\Versions\Current\"
-
 Dim Log As New clsLog
-
 Dim objShell As Object
 
 Public Sub CommitPushCurrentComponents(strCommitMessage As String)
@@ -42,7 +39,7 @@ Private Sub Push()
 End Sub
 Private Sub RunCommand(strCommand As String)
 
-    objShell.Run "cmd.exe /c " & "cd /d """ & strRepoPath & """ && git " & strCommand, 1, True
+    objShell.Run "cmd.exe /c " & "cd /d """ & Config_Git_PathRepo & """ && git " & strCommand, 1, True
 
 End Sub
 

@@ -10,12 +10,14 @@ Const c_strForm_Log As String = "frm_Log"
 
 Dim Writing As New clsWriting
 
-' Konstruktor
+
 Private Sub Class_Initialize()
+
     ' Prüft, ob das Formular geöffnet ist, und öffnet es falls notwendig
     If Not IsFormOpen(c_strForm_Log) Then
         DoCmd.OpenForm c_strForm_Log
     End If
+    
 End Sub
 
 ' Prüft, ob ein Formular geöffnet ist
@@ -27,6 +29,11 @@ End Function
 Public Property Get FullText() As String
     ' Gibt den vollständigen Log-Text zurück
     FullText = Forms(c_strForm_Log).txtLog.value
+End Property
+Public Property Let FullText(strText As String)
+
+    Forms(c_strForm_Log).txtLog.value = strText
+
 End Property
 
 Public Property Get LastLine() As String
@@ -55,6 +62,7 @@ Public Sub WriteEmptyLine()
     ' Fügt eine leere Zeile hinzu
     Forms(c_strForm_Log).txtLog.value = Forms(c_strForm_Log).txtLog.value & vbCrLf
 End Sub
+
 Public Sub Write_Application_WelcomeMessage(strApplicationName As String)
 
     WriteLine "Die Anwendung " & strApplicationName & " wurde gestartet. "
@@ -71,3 +79,14 @@ Private Function Get_WrapLine(strLineText As String) As String
     Get_WrapLine = Writing.Get_Timestamp() & " " & Writing.Get_Log_Prefix_ByType(ptInfo) & " " & strLineText
 
 End Function
+Public Sub Write_ProgressBar(strTitle As String, lngCurrentItem As Long, lngMaxItems As Long)
+    
+    WriteLine strTitle
+    WriteLine Writing.Get_ProgressBar(lngCurrentItem, lngMaxItems, pboLog, pbdesDot)
+    
+End Sub
+Public Sub Update_ProgressBar(strTitle As String, lngCurrentItem As Long, lngMaxItems As Long)
+     
+    FullText = Replace(FullText, LastLine, Writing.Get_ProgressBar(lngCurrentItem, lngMaxItems, pboLog, pbdesDot))
+
+End Sub

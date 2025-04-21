@@ -80,7 +80,6 @@ Public Function Get_Array_FromQuery(strQueryName As String) As Variant
 
 End Function
 Public Function Get_Listbox_Selected(objListBox As Listbox) As Variant
-
  ' Gibt alle ausgewählten Einträge einer Listbox als Array zurück
 
     
