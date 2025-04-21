@@ -58,6 +58,8 @@ Private Sub ApplyDefaultSettings()
 End Sub
 
 Private Sub cmdAddProperty_Click()
+'TO-DO: Prüfung einbauen, die prüft, ob der Name bereits von einem Draft genutzt wird.
+'Sollte dies der Fall sein, muss das Hinzufügen abgebrochen werden
 
     If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
      
@@ -83,6 +85,9 @@ Private Sub cmdAddProperty_Click()
 
 End Sub
 Private Sub cmdAddMethod_Click()
+
+    'TO-DO: Prüfung einbauen, die prüft, ob der Name bereits von einem Draft genutzt wird.
+    'Sollte dies der Fall sein, muss das Hinzufügen abgebrochen werden
 
     Dim strVisability As String
     Dim strType As String
@@ -205,7 +210,7 @@ Private Sub lstPackages_AfterUpdate()
         
         For intCounterArray = LBound(Selected) To UBound(Selected)
         
-            lngPackageID = dlookup("ID", "110_tblClassBuilder_Package", "Name ='" & Selected(intCounterArray) & "'")
+            lngPackageID = DLookup("ID", "110_tblClassBuilder_Package", "Name ='" & Selected(intCounterArray) & "'")
         
             'Eigenschaften hinzufügen
             Set rcsPropertiesCurrentPackage = CurrentDb.OpenRecordset( _
@@ -219,7 +224,7 @@ Private Sub lstPackages_AfterUpdate()
                 Do
         
                     lstPreviewProperties.AddItem rcsPropertiesCurrentPackage.Fields("Name").value & ";" & _
-                        dlookup("Name", "110_tblClassBuilder_Property_Type", " ID = " & rcsPropertiesCurrentPackage.Fields("Type_FK").value)
+                        DLookup("Name", "110_tblClassBuilder_Property_Type", " ID = " & rcsPropertiesCurrentPackage.Fields("Type_FK").value)
         
                     rcsPropertiesCurrentPackage.MoveNext
             
@@ -241,8 +246,8 @@ Private Sub lstPackages_AfterUpdate()
         
                     lstPreviewMethods.AddItem _
                         rcsMethodsCurrentPackage.Fields("Name").value & ";" & _
-                        dlookup("Name", "110_tblClassBuilder_Method_Type", "ID = " & rcsMethodsCurrentPackage.Fields("Type_FK").value) & ";" & _
-                        dlookup("Name", "110_tblClassBuilder_Visability", "ID = " & rcsMethodsCurrentPackage.Fields("Visability_FK").value)
+                        DLookup("Name", "110_tblClassBuilder_Method_Type", "ID = " & rcsMethodsCurrentPackage.Fields("Type_FK").value) & ";" & _
+                        DLookup("Name", "110_tblClassBuilder_Visability", "ID = " & rcsMethodsCurrentPackage.Fields("Visability_FK").value)
         
                     rcsMethodsCurrentPackage.MoveNext
             

@@ -8,7 +8,7 @@ Dim Log As New clsLog
 Dim Coding As New clsCoding
 Dim Coding_SQL As New clsCoding_SQL
 Dim Coding_VBA As New clsCoding_VBA
-Dim Class As New clsClass
+
 
 
 Public Sub Build(strClassName As String, Properties() As Variant, Methods() As Variant)
@@ -21,7 +21,7 @@ Public Sub Build(strClassName As String, Properties() As Variant, Methods() As V
     
     'Create VBA Code
     strVBACode = Coding_VBA.Get_Code_ClassModule(strClassName, Properties(), Methods())
-    Class.ClassModule_CreateNew strClassName, strVBACode
+    ClassModule_CreateNew strClassName, strVBACode
    
      
     'Create Table

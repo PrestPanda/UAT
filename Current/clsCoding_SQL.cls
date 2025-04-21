@@ -8,38 +8,14 @@ Dim Coding As New clsCoding
 Dim Coding_SQL As New clsCoding_SQL
 
 Public Enum enuCoding_SQL_DataTypes
-
     
     sqldtDate
     sqldtString
-    
 
 End Enum
-Public Function Format_Boolean(ByVal blnValue As Boolean) As String
-    ' Formatiert einen Boolean-Wert für SQL-Insertion
-    
-    FormatSQLBoolean = IIf(blnValue, "True", "False")
-    
-End Function
-Public Function Format_Date(ByVal dtmValue As Date) As String
-    ' Formatiert ein Datum für SQL-Insertion
-    
-    FormatSQLDate = "#" & Format(dtmValue, "yyyy-mm-dd") & "#"
-    
-End Function
-Public Function Format_Number(ByVal dblValue As Double) As String
-    ' Formatiert eine Zahl für SQL-Insertion
-    
-    FormatSQLNumber = CStr(dblValue)
-    
-End Function
-Public Function Format_String(ByVal strValue As String) As String
-    ' Formatiert einen String-Wert für SQL-Insertion
-    
-    Format_String = "'" & Replace(strValue, "'", "") & "'"
-    
-End Function
+'-------------------------------------------- FORMAT -----------------------------------
 Public Function Format_Value(ByVal varValue As Variant) As String
+'Refactored
     ' Erkennt den Datentyp und ruft die entsprechende Formatierungsfunktion auf
     
     Select Case varType(varValue)
@@ -65,6 +41,151 @@ Public Function Format_Value(ByVal varValue As Variant) As String
     End Select
     
 End Function
+Public Function Format_Boolean(ByVal blnValue As Boolean) As String
+'Refactored
+    ' Formatiert einen Boolean-Wert für SQL-Insertion
+    
+    FormatSQLBoolean = IIf(blnValue, "True", "False")
+    
+End Function
+Public Function Format_Date(ByVal dtmValue As Date) As String
+'Refactored
+    ' Formatiert ein Datum für SQL-Insertion
+    
+    FormatSQLDate = "#" & Format(dtmValue, "yyyy-mm-dd") & "#"
+    
+End Function
+Public Function Format_Number(ByVal dblValue As Double) As String
+'Refactored
+    ' Formatiert eine Zahl für SQL-Insertion
+    
+    FormatSQLNumber = CStr(dblValue)
+    
+End Function
+Public Function Format_String(ByVal strValue As String) As String
+'Refactored
+    ' Formatiert einen String-Wert für SQL-Insertion
+    
+    Format_String = "'" & Replace(strValue, "'", "") & "'"
+    
+End Function
+
+
+'-------------------------------------------- CODE - METHODS - DB_ -----------------------------------
+
+Public Function Get_DB_CreateTable(strTableName As String, strPropertyNames() As String, _
+                                    PropertyTypes() As enuCoding_DataTypes) As String
+' Erstellt ein SQL-Statement zum Erstellen einer Tabelle
+    
+    Dim i As Long
+    Dim strColumns As String
+    Dim strSQL As String
+    
+    For i = LBound(strPropertyNames) To UBound(strPropertyNames)
+
+            strColumns = strColumns & strPropertyNames(i) & " " & Get_DataType(PropertyTypes(i)) & ", "
+
+        
+    Next i
+    
+    
+    ' Entferne das letzte Komma und Leerzeichen
+    strColumns = Left(strColumns, Len(strColumns) - 2)
+    
+    ' SQL-Statement erstellen
+    
+    If InStr(strColumns, "ID") <> 0 Then
+        strSQL = "CREATE TABLE " & strTableName & " (" & strColumns & "," & _
+         vbNewLine & "CONSTRAINT pkID PRIMARY KEY (ID));"
+    Else
+        strSQL = "CREATE TABLE " & strTableName & " (" & strColumns & ");"
+    End If
+    
+    
+    ' Gibt das SQL-Statement zurück
+    Get_DB_CreateTable = strSQL
+    
+End Function
+Public Function Get_DB_Activate(strTableName As String) As String
+'Refactored
+'Generates SQL Code for Activating a dataset from an object
+
+    Get_DB_Activate = "UPDATE " & strTableName & " SET Active = true " & "WHERE ID =""" & "& lngID"
+
+End Function
+Public Function Get_DB_Deactivate(strTableName As String) As String
+'Refactored
+'Generates SQL Code for Deactivating a dataset from an object
+
+    Get_DB_Deactivate = "UPDATE " & strTableName & " SET Active = false " & "WHERE ID =""" & "& lngID"
+
+End Function
+Public Function Get_DB_Delete(strTableName As String) As String
+'Refactored
+'Generates SQL Code for Deleting a dataset from an object
+
+    Get_DB_Delete = "DELETE * FROM " & strTableName & " " & "WHERE ID =""" & "& lngID"
+
+End Function
+Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) As String
+'In refactoring
+'Generates VBA Code for Inserting a dataset into an object
+
+    Dim lngCounter As Long
+    Dim strColumns As String
+    Dim strValues As String
+    Dim strCode As String
+
+    For lngCounter = LBound(Properties()) To UBound(Properties())
+    
+        If Properties(lngCounter, 1) <> "ID" Then
+            strColumns = strColumns & Properties(lngCounter, 1) & ", "
+            strValues = strValues & _
+                Get_Code_Variable( _
+                Coding.Get_Variable_Name_AsString_ByString( _
+                    Properties(lngCounter, 1), _
+                    Properties(lngCounter, 2))) & ", "
+        End If
+        
+    Next lngCounter
+
+    ' Entferne das letzte Komma und Leerzeichen
+    strColumns = Left(strColumns, Len(strColumns) - 2)
+    strValues = Left(strValues, Len(strValues) - 2)
+
+    strCode = "INSERT INTO " & strTableName & " (" & strColumns & ") " & _
+              "VALUES (" & strValues & ")"""
+
+    Get_DB_Insert = strCode
+    
+End Function
+Public Function Get_DB_Load(strTableName As String) As String
+'Generates SQL Code for Loading a dataset from an object
+
+    Get_DB_Load = "SELECT * FROM " & strTableName
+
+End Function
+Public Function Get_DB_Update(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
+'Generates SQL Code for Updating a dataset in an object
+
+    Dim i As Long
+    Dim strUpdates As String
+
+    For i = LBound(strPropertyNames) To UBound(strPropertyNames)
+        If strPropertyNames(i) <> "ID" Then
+            strUpdates = strUpdates & strPropertyNames(i) & " = " & _
+                Get_Code_Variable( _
+                Coding.Get_Variable_Name(strPropertyNames(i), PropertyTypes(i)), PropertyTypes(i)) & ", "
+        End If
+    Next i
+
+    ' Entferne das letzte Komma und Leerzeichen
+    strUpdates = Left(strUpdates, Len(strUpdates) - 2)
+
+    Get_DB_Update = "UPDATE " & strTableName & " SET " & strUpdates & " WHERE ID = """ & " &  lngID"
+
+End Function
+
 Private Function Get_DataType(PropertyType As enuCoding_DataTypes) As String
     ' Wandelt den Variablentyp in den passenden SQL-Datentyp um
     Select Case PropertyType
@@ -114,105 +235,4 @@ Public Function Get_Code_Variable(varValue As Variant, varType As enuCoding_Data
             Err.Raise vbObjectError + 1000, "FormatSQLCode", "Unsupported data type"
     End Select
     
-End Function
-
-Public Function Get_DB_Activate(strTableName As String) As String
-'Generates SQL Code for Activating a dataset from an object
-
-    Get_DB_Activate = "UPDATE " & strTableName & " SET Active = true " & "WHERE ID =""" & "& lngID"
-
-End Function
-Public Function Get_DB_Deactivate(strTableName As String) As String
-'Generates SQL Code for Deactivating a dataset from an object
-
-    Get_DB_Deactivate = "UPDATE " & strTableName & " SET Active = false " & "WHERE ID =""" & "& lngID"
-
-End Function
-Public Function Get_DB_Delete(strTableName As String) As String
-'Generates SQL Code for Deleting a dataset from an object
-
-    Get_DB_Delete = "DELETE * FROM " & strTableName & " " & "WHERE ID =""" & "& lngID"
-
-End Function
-Public Function Get_DB_Insert(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
-'Generates VBA Code for Inserting a dataset into an object
-
-    Dim i As Long
-    Dim strColumns As String
-    Dim strValues As String
-    Dim strCode As String
-
-    For i = LBound(strPropertyNames) To UBound(strPropertyNames)
-        If strPropertyNames(i) <> "ID" Then
-            strColumns = strColumns & strPropertyNames(i) & ", "
-            strValues = strValues & Get_Code_Variable(Coding.Get_Variable_Name(strPropertyNames(i), PropertyTypes(i)), PropertyTypes(i)) & ", "
-        End If
-    Next i
-
-    ' Entferne das letzte Komma und Leerzeichen
-    strColumns = Left(strColumns, Len(strColumns) - 2)
-    strValues = Left(strValues, Len(strValues) - 2)
-
-    strCode = "INSERT INTO " & strTableName & " (" & strColumns & ") " & _
-              "VALUES (" & strValues & ")"""
-
-    Get_DB_Insert = strCode
-End Function
-Public Function Get_DB_Load(strTableName As String) As String
-'Generates SQL Code for Loading a dataset from an object
-
-    Get_DB_Load = "SELECT * FROM " & strTableName
-
-End Function
-Public Function Get_DB_Update(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
-'Generates SQL Code for Updating a dataset in an object
-
-    Dim i As Long
-    Dim strUpdates As String
-
-    For i = LBound(strPropertyNames) To UBound(strPropertyNames)
-        If strPropertyNames(i) <> "ID" Then
-            strUpdates = strUpdates & strPropertyNames(i) & " = " & _
-                Get_Code_Variable( _
-                Coding.Get_Variable_Name(strPropertyNames(i), PropertyTypes(i)), PropertyTypes(i)) & ", "
-        End If
-    Next i
-
-    ' Entferne das letzte Komma und Leerzeichen
-    strUpdates = Left(strUpdates, Len(strUpdates) - 2)
-
-    Get_DB_Update = "UPDATE " & strTableName & " SET " & strUpdates & " WHERE ID = """ & " &  lngID"
-
-End Function
-Public Function Get_DB_CreateTable(strTableName As String, strPropertyNames() As String, _
-                                    PropertyTypes() As enuCoding_DataTypes) As String
-' Erstellt ein SQL-Statement zum Erstellen einer Tabelle
-    
-    Dim i As Long
-    Dim strColumns As String
-    Dim strSQL As String
-    
-    For i = LBound(strPropertyNames) To UBound(strPropertyNames)
-
-            strColumns = strColumns & strPropertyNames(i) & " " & Get_DataType(PropertyTypes(i)) & ", "
-
-        
-    Next i
-    
-    
-    ' Entferne das letzte Komma und Leerzeichen
-    strColumns = Left(strColumns, Len(strColumns) - 2)
-    
-    ' SQL-Statement erstellen
-    
-    If InStr(strColumns, "ID") <> 0 Then
-        strSQL = "CREATE TABLE " & strTableName & " (" & strColumns & "," & _
-         vbNewLine & "CONSTRAINT pkID PRIMARY KEY (ID));"
-    Else
-        strSQL = "CREATE TABLE " & strTableName & " (" & strColumns & ");"
-    End If
-    
-    
-    ' Gibt das SQL-Statement zurück
-    Get_DB_CreateTable = strSQL
 End Function

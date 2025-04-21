@@ -11,6 +11,8 @@ Option Compare Database
 Option Explicit
 
 Dim Log As New clsLog
+Dim Component As New clsComponent
+Dim Coding_Git As New clsCoding_Git
 
 
 Private Sub cmdExportComponents_Click()
@@ -19,7 +21,7 @@ Private Sub cmdExportComponents_Click()
     
     strCommitMessage = Me.txtCommitMessage.value
 
-    Dim Coding_Git As New clsCoding_Git
+
     Dim msgEmptyCommitMessage As VbMsgBoxResult
     
     If txtCommitMessage.value = "" Or IsNull(txtCommitMessage) = True Then
@@ -28,7 +30,7 @@ Private Sub cmdExportComponents_Click()
     End If
 
     If msgEmptyCommitMessage = vbYes Or IsNull(txtCommitMessage) = False Then
-        ExportAllComponents
+        Component.ExportAllComponents
         Coding_Git.CommitPushCurrentComponents strCommitMessage
     End If
     
