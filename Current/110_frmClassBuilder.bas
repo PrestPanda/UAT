@@ -27,13 +27,7 @@ Private Sub Form_Load()
     pagClassData.SetFocus
     Load_Packages
     ApplyDefaultSettings
-    
-    lstPreviewProperties.ColumnCount = 2
-    lstPreviewMethods.ColumnCount = 3
-    lstPackages.ColumnCount = 1
-    
-    ClearListBoxEntries Me.Name, lstPreviewMethods
-    ClearListBoxEntries Me.Name, lstPreviewProperties
+
     
     UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
     UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
@@ -55,6 +49,14 @@ Private Sub ApplyDefaultSettings()
     optMethodAddTypeFunction = False
     optMethodAddPrivate = False
     optMethodAddPublic = False
+    
+    lstPreviewProperties.ColumnCount = 2
+    lstPreviewMethods.ColumnCount = 3
+    lstPackages.ColumnCount = 1
+    
+    Listbox_Clear Me.Name, lstPreviewMethods
+    Listbox_Clear Me.Name, lstPreviewProperties
+    
 End Sub
 
 Private Sub cmdAddProperty_Click()
@@ -63,7 +65,7 @@ Private Sub cmdAddProperty_Click()
 
     If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
      
-            If ListBox_ContainsValue(Me.Name, lstPreviewProperties, 0, txtAddPropertyName.value) = False Then
+            If ListBox_ContainsValue_InColumn(Me.Name, lstPreviewProperties, 0, txtAddPropertyName.value) = False Then
 
                 lstPreviewProperties.AddItem txtAddPropertyName.value & ";" & _
                     cmbAddPropertyType.Column(1)
@@ -103,7 +105,7 @@ Private Sub cmdAddMethod_Click()
     
     If txtAddMethodName <> "" Then
     
-        If ListBox_ContainsValue(Me.Name, lstPreviewMethods, 0, txtAddMethodName) = False Then
+        If ListBox_ContainsValue_InColumn(Me.Name, lstPreviewMethods, 0, txtAddMethodName) = False Then
     
             If optMethodAddPrivate = True Then strVisability = "Private"
             If optMethodAddPublic = True Then strVisability = "Public"
@@ -187,23 +189,61 @@ ExitSub:
 
 End Sub
 Private Sub lstPackages_AfterUpdate()
+'In Refactoring
+'Problem: Es werden beim Select und Deselect alle manuell hinzu gefügten Eigenschaften gelöscht.
 
-
+    Dim Packages As Variant
     Dim Selected As Variant
-    Dim rcsPropertiesCurrentPackage As Recordset
+    Dim strCurrentPackage_Name As String
+    Dim blnCurrentPackage_Selected As Boolean
+    
+    Dim lngCounter_Packages As Long
+    Dim lngCounter_PackageProperties As Long
+    Dim lngCounter_PackageMethods As Long
+    
+    Packages = ListBox_Get_Array(Me.Name, lstPackages)
+    Selected = ListBox_Get_Array_Selected(Me.Name, lstPackages)
+
+    If Not IsEmpty(Packages) Then
+    
+        For lngCounter_Packages = LBound(Packages) To UBound(Packages)
+        
+        
+        
+        
+        Next lngCounter_Packages
+    
+    End If
+    
+        'Schleife durch alle Pakete
+            
+                'Schleife durch die Eigenschaften des Pakets
+            
+                    'Wenn Eintrag ausgewählt, dann
+                        'Prüfen, ob die Eigenschaften des Pakets in der Listbox Properties vorhanden sind
+                        'Wenn nicht, sollen die Eigenschaften hinzugefügt werden
+                        
+                        
+                    
+                    'else Wenn Eintrag nicht ausgewählt
+                    
+                        'Prüfen, ob die Eigenschaften des Pakets in der Listbox Properties vorhanden sind
+                        'Falls ja
+                        
+                        
+                    'end if
+                    
+                'Schleife durch alle Methoden des Pakets
+
+        
+        'Schleife durch alle Pakete
+        
+        Dim rcsPropertiesCurrentPackage As Recordset
     Dim rcsMethodsCurrentPackage As Recordset
     Dim intCounterArray As Integer
     Dim PreviewProperties() As Variant
     Dim lngPackageID As Long
-    
-    
-    Listbox_Clear Me.Name, lstPreviewMethods
-    Listbox_Clear Me.Name, lstPreviewProperties
-    
-    Selected = Get_Listbox_Selected(lstPackages)
-
-    If Not IsEmpty(Selected) Then
-    
+        
         lstPreviewProperties.ColumnCount = 2
         lstPreviewMethods.ColumnCount = 3
     
@@ -257,7 +297,7 @@ Private Sub lstPackages_AfterUpdate()
         
         Next intCounterArray
 
-    End If
+
 
 End Sub
 Private Sub cmdPreviewMethod_MoveDown_Click()
@@ -272,8 +312,91 @@ End Sub
 Private Sub cmdPreviewProperty_MoveUp_Click()
     ListBox_Item_Move lstPreviewProperties, Up
 End Sub
-Public Sub ListBox_Item_Move(objListBox As Listbox, Direction As enuDirection)
 
+
+'#################################### Listbox - Auswahl #############################################
+Private Sub lstPreviewMethods_Click()
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+End Sub
+Private Sub lstPreviewMethods_GotFocus()
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+End Sub
+Private Sub lstPreviewProperties_Click()
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+End Sub
+Private Sub lstPreviewProperties_GotFocus()
+    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+End Sub
+
+Public Sub UpdateListBoxNavigationButtons( _
+    strFormName As String, _
+    objListBox As Object, _
+    objButtonUp As Object, _
+    objButtonDown As Object)
+
+    ' Aktiviert oder deaktiviert die Buttons zum Verschieben eines Listbox-Eintrags je nach Auswahlposition
+    ' Der Zugriff auf die Steuerelemente erfolgt direkt über Forms(strFormName).Controls("...").Enabled
+
+    
+    Dim intIndex As Long
+    Dim intCount As Long
+
+    If Not CurrentProject.AllForms(strFormName).IsLoaded Then Exit Sub
+
+    intCount = Forms(strFormName).Controls(objListBox.Name).ListCount
+    intIndex = Forms(strFormName).Controls(objListBox.Name).ListIndex + 1
+
+    ' Wenn nichts ausgewählt oder Liste leer ? Buttons deaktivieren
+    If intCount = 0 Or Forms(strFormName).Controls(objListBox.Name).ListIndex = -1 Then
+        Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
+        Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
+        Exit Sub
+    End If
+
+    ' Standardmäßig beide aktivieren
+    Forms(strFormName).Controls(objButtonUp.Name).Enabled = True
+    Forms(strFormName).Controls(objButtonDown.Name).Enabled = True
+
+    ' Randposition prüfen
+    If intIndex = 1 Then Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
+    If intIndex = intCount Then Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
+
+End Sub
+
+Private Sub optMethodAddPrivate_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddPrivate, optMethodAddPublic
+End Sub
+Private Sub optMethodAddPublic_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddPublic, optMethodAddPrivate
+End Sub
+Private Sub optMethodAddTypeFunction_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddTypeFunction, optMethodAddTypeSub
+End Sub
+Private Sub optMethodAddTypeSub_AfterUpdate()
+    SyncOptionFields Me.Name, optMethodAddTypeSub, optMethodAddTypeFunction
+End Sub
+Public Sub SyncOptionFields( _
+    strFormName As String, _
+    objChangedOption As Object, _
+    objOtherOption As Object)
+
+    ' Wenn das geänderte Optionsfeld aktiviert wurde,
+    ' wird das andere automatisch deaktiviert
+
+    
+    Dim frm As Access.Form
+    Set frm = Forms(strFormName)
+
+    If frm.Controls(objChangedOption.Name).value = True Then
+        frm.Controls(objOtherOption.Name).value = False
+    Else
+        frm.Controls(objOtherOption.Name).value = True
+    End If
+
+End Sub
+
+Public Sub ListBox_Item_Move(objListBox As Listbox, Direction As enuDirection)
+'To-Do: Refactor
     ' Verschiebt die markierte Zeile in einer mehrspaltigen Access-ListBox (Value List) um eine Position
     ' Unterstützt beliebig viele Spalten – funktioniert nur mit RowSourceType = "Value List"
 
@@ -356,106 +479,3 @@ Public Sub ListBox_Item_Move(objListBox As Listbox, Direction As enuDirection)
     UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
     
 End Sub
-
-'#################################### Listbox - Auswahl #############################################
-Private Sub lstPreviewMethods_Click()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-End Sub
-Private Sub lstPreviewMethods_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-End Sub
-Private Sub lstPreviewProperties_Click()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-End Sub
-Private Sub lstPreviewProperties_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-End Sub
-
-Public Sub UpdateListBoxNavigationButtons( _
-    strFormName As String, _
-    objListBox As Object, _
-    objButtonUp As Object, _
-    objButtonDown As Object)
-
-    ' Aktiviert oder deaktiviert die Buttons zum Verschieben eines Listbox-Eintrags je nach Auswahlposition
-    ' Der Zugriff auf die Steuerelemente erfolgt direkt über Forms(strFormName).Controls("...").Enabled
-
-    
-    Dim intIndex As Long
-    Dim intCount As Long
-
-    If Not CurrentProject.AllForms(strFormName).IsLoaded Then Exit Sub
-
-    intCount = Forms(strFormName).Controls(objListBox.Name).ListCount
-    intIndex = Forms(strFormName).Controls(objListBox.Name).ListIndex + 1
-
-    ' Wenn nichts ausgewählt oder Liste leer ? Buttons deaktivieren
-    If intCount = 0 Or Forms(strFormName).Controls(objListBox.Name).ListIndex = -1 Then
-        Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
-        Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
-        Exit Sub
-    End If
-
-    ' Standardmäßig beide aktivieren
-    Forms(strFormName).Controls(objButtonUp.Name).Enabled = True
-    Forms(strFormName).Controls(objButtonDown.Name).Enabled = True
-
-    ' Randposition prüfen
-    If intIndex = 1 Then Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
-    If intIndex = intCount Then Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
-
-End Sub
-
-Private Sub optMethodAddPrivate_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddPrivate, optMethodAddPublic
-End Sub
-Private Sub optMethodAddPublic_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddPublic, optMethodAddPrivate
-End Sub
-Private Sub optMethodAddTypeFunction_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddTypeFunction, optMethodAddTypeSub
-End Sub
-Private Sub optMethodAddTypeSub_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddTypeSub, optMethodAddTypeFunction
-End Sub
-Public Sub SyncOptionFields( _
-    strFormName As String, _
-    objChangedOption As Object, _
-    objOtherOption As Object)
-
-    ' Wenn das geänderte Optionsfeld aktiviert wurde,
-    ' wird das andere automatisch deaktiviert
-
-    
-    Dim frm As Access.Form
-    Set frm = Forms(strFormName)
-
-    If frm.Controls(objChangedOption.Name).value = True Then
-        frm.Controls(objOtherOption.Name).value = False
-    Else
-        frm.Controls(objOtherOption.Name).value = True
-    End If
-
-End Sub
-Public Function GetSelectedValues(objListBox As Listbox) As String()
-    Dim i As Long, n As Long
-    Dim arr() As String
-
-    ReDim arr(0 To 0)
-    n = -1
-
-    For i = 0 To objListBox.ListCount - 1
-        If objListBox.Selected(i) Then
-            n = n + 1
-            ReDim Preserve arr(0 To n)
-            arr(n) = objListBox.ItemData(i)
-        End If
-    Next i
-
-    If n = -1 Then
-        GetSelectedValues = Split("") ' leeres Array
-    Else
-        GetSelectedValues = arr
-    End If
-End Function
-
