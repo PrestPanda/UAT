@@ -4,3 +4,4 @@ Name: cmdOpenClassBuilder	Typ: CommandButton
 Name: cmdExportComponents	Typ: CommandButton
 Name: txtCommitMessage	Typ: TextBox
 Name: Bezeichnungsfeld41	Typ: Label
+Name: Bezeichnungsfeld42	Typ: Label

@@ -113,8 +113,8 @@ Public Function ListBox_Get_Array_Selected(objListBox As Listbox) As String()
     Next i
 
     If n = -1 Then
-        GetSelectedValues = Split("") ' leeres Array
+        ListBox_Get_Array_Selected = Split("") ' leeres Array
     Else
-        GetSelectedValues = arr
+        ListBox_Get_Array_Selected = arr
     End If
 End Function

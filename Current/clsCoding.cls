@@ -43,19 +43,19 @@ Public Function Get_Variable_DimensionStatement_ByEnum(Visibility As enuCoding_V
 'Refactored
 'Returns a dimension statement for a variable based on visability and data type
 
-    Get_Variable_DimensionStatement = Get_Visibility_AsString_ByEnum(Visibility) & " " & _
+    Get_Variable_DimensionStatement_ByEnum = Get_Visibility_AsString_ByEnum(Visibility) & " " & _
                                         Get_Variable_Name_AsString_ByEnum(strName, DataType) & " as " & _
                                         Get_Variable_Type_AsString_ByEnum(DataType)
 
 End Function
 Public Function Get_Variable_DimensionStatement_ByString(strVisibility As String, strName As String, _
-    strDatatype As String) As String
+    strDataType As String) As String
 'Refactored
 'Returns a dimension statement for a variable based on visability and data type
 
-    Get_Variable_DimensionStatement = strVisibility & " " & _
-                                        Get_Variable_Name_AsString_ByString(strName, strDatatype) & " as " & _
-                                        strDatatype
+    Get_Variable_DimensionStatement_ByString = strVisibility & " " & _
+                                        Get_Variable_Name_AsString_ByString(strName, strDataType) & " as " & _
+                                        strDataType
 
 End Function
 Public Function Get_Variable_Name_AsString_ByEnum( _
@@ -64,16 +64,16 @@ Public Function Get_Variable_Name_AsString_ByEnum( _
 'Refactored
 'Returns the name of a Variable with variable type prefix
 
-    Get_Variable_Name = Get_Variable_Prefix_AsString_ByEnum(DataType) & strName
+    Get_Variable_Name_AsString_ByEnum = Get_Variable_Prefix_AsString_ByEnum(DataType) & strName
 
 End Function
 Public Function Get_Variable_Name_AsString_ByString( _
-    strName As String, _
-    strDatatype As String) As String
+    ByVal strName As String, _
+    ByVal strDataType As String) As String
 'Refactored
 'Returns the name of a Variable with variable type prefix
 
-    Get_Variable_Name_AsString_ByString = Get_Variable_Prefix_AsString_ByString(strDatatype) & strName
+    Get_Variable_Name_AsString_ByString = Get_Variable_Prefix_AsString_ByString(strDataType) & strName
 
 End Function
 Public Function Get_Visibility_AsString_ByEnum(Visibilty As enuCoding_Visibility) As String
@@ -95,7 +95,7 @@ Public Function Get_Visibility_AsEnum_ByString(strVisibilty As String) As enuCod
 'Refactored
 'Returns the visability type as enumeration
 
-    Select Case Visibilty
+    Select Case strVisibilty
     
         Case "Private"
             Get_Visibility_AsEnum_ByString = vPrivate
@@ -106,12 +106,12 @@ Public Function Get_Visibility_AsEnum_ByString(strVisibilty As String) As enuCod
     End Select
 
 End Function
-Public Function Get_Variable_Prefix_AsString_ByString(strDatatype As String) As String
+Public Function Get_Variable_Prefix_AsString_ByString(strDataType As String) As String
 'Refactored
 
     Get_Variable_Prefix_AsString_ByString = _
         Get_Variable_Prefix_AsString_ByEnum( _
-        Get_Variable_Type_AsEnum_ByString(strDatatype))
+        Get_Variable_Type_AsEnum_ByString(strDataType))
 
 End Function
 
@@ -182,11 +182,11 @@ Public Function Get_Variable_Type_AsString_ByEnum(VariableType As enuCoding_Data
     End Select
 
 End Function
-Public Function Get_Variable_Type_AsEnum_ByString(strDatatype As String) As enuCoding_DataTypes
+Public Function Get_Variable_Type_AsEnum_ByString(ByVal strDataType As String) As enuCoding_DataTypes
 'Refactored
 'Returns
 
-    Select Case strType
+    Select Case strDataType
     
         Case "Boolean"
             Get_Variable_Type_AsEnum_ByString = vtBoolean

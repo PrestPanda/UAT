@@ -25,8 +25,8 @@ Public Sub Build(strClassName As String, Properties() As Variant, Methods() As V
    
      
     'Create Table
-    DoCmd.RunSQL Coding_SQL.Get_DB_CreateTable("tbl_" & strClassName, strProperties(), PropertyTypes())
-    Log.WriteLine "Tabelle wurde erstellt."
+    DoCmd.RunSQL Coding_SQL.Get_DB_CreateTable("tbl_" & strClassName, Properties())
+    
     
     Log.WriteLine "Klasse wurde erstellt."
 

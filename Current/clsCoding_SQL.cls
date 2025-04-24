@@ -73,20 +73,23 @@ End Function
 
 '-------------------------------------------- CODE - METHODS - DB_ -----------------------------------
 
-Public Function Get_DB_CreateTable(strTableName As String, strPropertyNames() As String, _
-                                    PropertyTypes() As enuCoding_DataTypes) As String
+Public Function Get_DB_CreateTable(strTableName As String, Properties() As Variant) As String
+'In refactoring
+
+    
 ' Erstellt ein SQL-Statement zum Erstellen einer Tabelle
     
-    Dim i As Long
+    Dim lngCounter As Long
     Dim strColumns As String
     Dim strSQL As String
     
-    For i = LBound(strPropertyNames) To UBound(strPropertyNames)
+    For lngCounter = LBound(Properties()) To UBound(Properties())
 
-            strColumns = strColumns & strPropertyNames(i) & " " & Get_DataType(PropertyTypes(i)) & ", "
+            strColumns = strColumns & _
+                Properties(lngCounter, 1) & " " & Get_DataType_AsString_ByString(Properties(lngCounter, 2)) & ", "
 
         
-    Next i
+    Next lngCounter
     
     
     ' Entferne das letzte Komma und Leerzeichen
@@ -103,6 +106,7 @@ Public Function Get_DB_CreateTable(strTableName As String, strPropertyNames() As
     
     
     ' Gibt das SQL-Statement zurück
+
     Get_DB_CreateTable = strSQL
     
 End Function
@@ -128,7 +132,7 @@ Public Function Get_DB_Delete(strTableName As String) As String
 
 End Function
 Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) As String
-'In refactoring
+'In Refactoring
 'Generates VBA Code for Inserting a dataset into an object
 
     Dim lngCounter As Long
@@ -141,10 +145,11 @@ Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) A
         If Properties(lngCounter, 1) <> "ID" Then
             strColumns = strColumns & Properties(lngCounter, 1) & ", "
             strValues = strValues & _
-                Get_Code_Variable( _
+                Coding_SQL.Get_Code_Variable_AsString_ByString( _
                 Coding.Get_Variable_Name_AsString_ByString( _
                     Properties(lngCounter, 1), _
-                    Properties(lngCounter, 2))) & ", "
+                    Properties(lngCounter, 2)), _
+                    Properties(lngCounter, 2))
         End If
         
     Next lngCounter
@@ -165,19 +170,25 @@ Public Function Get_DB_Load(strTableName As String) As String
     Get_DB_Load = "SELECT * FROM " & strTableName
 
 End Function
-Public Function Get_DB_Update(strTableName As String, strPropertyNames() As String, PropertyTypes() As enuCoding_DataTypes) As String
+Public Function Get_DB_Update(strTableName As String, Properties() As Variant) As String
+'Refactored
 'Generates SQL Code for Updating a dataset in an object
 
-    Dim i As Long
+    Dim lngCounter As Long
     Dim strUpdates As String
 
-    For i = LBound(strPropertyNames) To UBound(strPropertyNames)
-        If strPropertyNames(i) <> "ID" Then
-            strUpdates = strUpdates & strPropertyNames(i) & " = " & _
-                Get_Code_Variable( _
-                Coding.Get_Variable_Name(strPropertyNames(i), PropertyTypes(i)), PropertyTypes(i)) & ", "
+    For lngCounter = LBound(Properties()) To UBound(Properties())
+    
+        If Properties(lngCounter, 1) <> "ID" Then
+            strUpdates = strUpdates & Properties(lngCounter, 1) & " = " & _
+                Coding.Get_Variable_Name_AsString_ByString( _
+                    Coding.Get_Variable_Name_AsString_ByString( _
+                        Properties(lngCounter, 1), _
+                        Properties(lngCounter, 2)), _
+                        Properties(lngCounter, 2))
         End If
-    Next i
+        
+    Next lngCounter
 
     ' Entferne das letzte Komma und Leerzeichen
     strUpdates = Left(strUpdates, Len(strUpdates) - 2)
@@ -186,7 +197,8 @@ Public Function Get_DB_Update(strTableName As String, strPropertyNames() As Stri
 
 End Function
 
-Private Function Get_DataType(PropertyType As enuCoding_DataTypes) As String
+Private Function Get_DataType_AsString_ByString(ByVal strDataType As String) As String
+'Refactored
     ' Wandelt den Variablentyp in den passenden SQL-Datentyp um
     Select Case PropertyType
     
@@ -216,23 +228,60 @@ Private Function Get_DataType(PropertyType As enuCoding_DataTypes) As String
             
     End Select
 End Function
-Public Function Get_Code_Variable(varValue As Variant, varType As enuCoding_DataTypes) As String
+Private Function Get_DataType_AsString_ByEnum(DataType As enuCoding_DataTypes) As String
+'Refactored
+    ' Wandelt den Variablentyp in den passenden SQL-Datentyp um
+    
+    Select Case PropertyType
+    
+        Case vtString
+            Get_DataType_AsString_ByEnum = "TEXT(255)"
+            
+        Case vtStringLong
+            Get_DataType_AsString_ByEnum = "LONGTEXT"
+            
+        Case vtLong
+            Get_DataType_AsString_ByEnum = "INTEGER"
+            
+        Case vtDouble
+            Get_DataType_AsString_ByEnum = "DOUBLE"
+            
+        Case vtDate
+            Get_DataType_AsString_ByEnum = "DATETIME"
+            
+        Case vtBoolean
+            Get_DataType_AsString_ByEnum = "YESNO"
+            
+        Case vtAuto
+            Get_DataType_AsString_ByEnum = "AUTOINCREMENT"
+            
+        Case Else
+            Get_DataType_AsString_ByEnum = "TEXT"
+            
+    End Select
+    
+End Function
+Public Function Get_Code_Variable_AsString_ByString(ByVal strVariableName As String, ByVal strDataType As String) As String
+'Refactored
     ' Erkennt den Datentyp und erzeugt VBA-Code für SQL-Insertion
     
-    Select Case varType
+    Select Case Coding.Get_Variable_Type_AsEnum_ByString(strDataType)
     
         Case vtString, vtStringLong
-            Format_SQL_Code = "'"" & " & varValue & " & ""'"
+            Get_Code_Variable_AsString_ByString = "'"" & " & strVariableName & " & ""'"
+            
         Case vtLong, vtDouble
-            Format_SQL_Code = "" & varValue & ""
+            Get_Code_Variable_AsString_ByString = "" & strVariableName & ""
+            
         Case vtDate
-            Format_SQL_Code = "#" & varValue & "#"
+            Get_Code_Variable_AsString_ByString = "#" & strVariableName & "#"
+            
         Case vtBoolean
-            Format_SQL_Code = CInt(varType)
+            Get_Code_Variable_AsString_ByString = CInt(Coding.Get_Variable_Type_AsEnum_ByString(strDataType))
+            
         Case vbNull
-            Format_SQL_Code = "NULL"
-        Case Else
-            Err.Raise vbObjectError + 1000, "FormatSQLCode", "Unsupported data type"
+            Get_Code_Variable_AsString_ByString = "NULL"
+            
     End Select
     
 End Function
