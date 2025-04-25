@@ -31,7 +31,7 @@ Public Function Get_Code_ClassModule(strClassName As String, _
     strCode = strCode & vbNewLine & Get_Code_ClassModule_Properties(Properties()) & vbNewLine
     strCode = strCode & vbNewLine & Get_Code_Module_Methods(strTableName, Properties(), Methods()) & vbNewLine
 
-    Get_Code_Module = strCode
+    Get_Code_ClassModule = strCode
 
 End Function
 '-------------------------------------------- CODE - Module - PRIVATE VARIABLES -----------------------------------
@@ -123,7 +123,7 @@ Public Function Get_Code_Module_Property_Get_ByString(strPropertyName As String,
 'Refactored
 
     Get_Code_Module_Property_Get_ByString = strVisibility & _
-                            " Property Get " & strPropertyName & "() As " & _
+                            " Property Get " & strPropertyName & "() As " & strDataType & _
                              vbNewLine & vbNewLine & _
                              vbTab & strPropertyName & " = " & _
                              Coding.Get_Variable_Name_AsString_ByString(strPropertyName, strDataType) & _
@@ -171,8 +171,10 @@ Public Function Get_Code_Module_Methods(strTableName As String, _
         Else
         
             'Nur den Wrap erstellen
-            'To-Do: Hier weiterarbeiten
-'            strCodeAddition = Get_Code_Wrap_VBA_Method
+            strCodeAddition = Get_Code_Wrap_VBA_Method( _
+                Coding.Get_Visibility_AsEnum_ByString(CStr(Methods(lngCounter, 2))), _
+                Coding.Get_Method_Type_AsEnum_ByString(CStr(Methods(lngCounter, 3))), _
+                CStr(Methods(lngCounter, 1)), "", "", vtNoType)
             
         End If
     
@@ -517,10 +519,10 @@ End Function
 Public Function Get_Code_Module_Method_Draft_DB_Update(strTableName As String, Properties() As Variant) As String
 'Refactored
 
-    Get_Code_Module_Method_DB_Update = _
+    Get_Code_Module_Method_Draft_DB_Update = _
         Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Update", "", _
         Get_Code_Wrap_VBA_SQL_Statement( _
-        Coding_SQL.Get_DB_Update(strTableName, Properties)) _
+        Coding_SQL.Get_DB_Update(strTableName, Properties())) _
             , vtNoType)
 
 

@@ -75,8 +75,6 @@ End Function
 
 Public Function Get_DB_CreateTable(strTableName As String, Properties() As Variant) As String
 'In refactoring
-
-    
 ' Erstellt ein SQL-Statement zum Erstellen einer Tabelle
     
     Dim lngCounter As Long
@@ -86,7 +84,8 @@ Public Function Get_DB_CreateTable(strTableName As String, Properties() As Varia
     For lngCounter = LBound(Properties()) To UBound(Properties())
 
             strColumns = strColumns & _
-                Properties(lngCounter, 1) & " " & Get_DataType_AsString_ByString(Properties(lngCounter, 2)) & ", "
+                Properties(lngCounter, 1) & " " & _
+                Get_DataType_AsString_ByString(CStr(Properties(lngCounter, 2))) & ", "
 
         
     Next lngCounter
@@ -143,13 +142,13 @@ Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) A
     For lngCounter = LBound(Properties()) To UBound(Properties())
     
         If Properties(lngCounter, 1) <> "ID" Then
+        
             strColumns = strColumns & Properties(lngCounter, 1) & ", "
+            
             strValues = strValues & _
                 Coding_SQL.Get_Code_Variable_AsString_ByString( _
-                Coding.Get_Variable_Name_AsString_ByString( _
                     Properties(lngCounter, 1), _
-                    Properties(lngCounter, 2)), _
-                    Properties(lngCounter, 2))
+                    Properties(lngCounter, 2)) & ", "
         End If
         
     Next lngCounter
@@ -158,8 +157,9 @@ Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) A
     strColumns = Left(strColumns, Len(strColumns) - 2)
     strValues = Left(strValues, Len(strValues) - 2)
 
-    strCode = "INSERT INTO " & strTableName & " (" & strColumns & ") " & _
-              "VALUES (" & strValues & ")"""
+    strCode = "INSERT INTO " & strTableName & vbNewLine & _
+                " (" & strColumns & ") " & vbNewLine & _
+                "VALUES (" & strValues & ")"""
 
     Get_DB_Insert = strCode
     
@@ -182,10 +182,8 @@ Public Function Get_DB_Update(strTableName As String, Properties() As Variant) A
         If Properties(lngCounter, 1) <> "ID" Then
             strUpdates = strUpdates & Properties(lngCounter, 1) & " = " & _
                 Coding.Get_Variable_Name_AsString_ByString( _
-                    Coding.Get_Variable_Name_AsString_ByString( _
-                        Properties(lngCounter, 1), _
-                        Properties(lngCounter, 2)), _
-                        Properties(lngCounter, 2))
+                    CStr(Properties(lngCounter, 1)), _
+                    CStr(Properties(lngCounter, 2))) & ", "
         End If
         
     Next lngCounter
@@ -197,34 +195,34 @@ Public Function Get_DB_Update(strTableName As String, Properties() As Variant) A
 
 End Function
 
-Private Function Get_DataType_AsString_ByString(ByVal strDataType As String) As String
+Private Function Get_DataType_AsString_ByString(strDataType As String) As String
 'Refactored
     ' Wandelt den Variablentyp in den passenden SQL-Datentyp um
-    Select Case PropertyType
+    Select Case strDataType
     
-        Case vtString
-            Get_DataType = "TEXT(255)"
+        Case "String"
+            Get_DataType_AsString_ByString = "TEXT(255)"
             
-        Case vtStringLong
-            Get_DataType = "LONGTEXT"
+        Case "StringLong"
+            Get_DataType_AsString_ByString = "LONGTEXT"
             
-        Case vtLong
-            Get_DataType = "INTEGER"
+        Case "Long"
+            Get_DataType_AsString_ByString = "INTEGER"
             
-        Case vtDouble
-            Get_DataType = "DOUBLE"
+        Case "Double"
+            Get_DataType_AsString_ByString = "DOUBLE"
             
-        Case vtDate
-            Get_DataType = "DATETIME"
+        Case "Date"
+            Get_DataType_AsString_ByString = "DATETIME"
             
-        Case vtBoolean
-            Get_DataType = "YESNO"
+        Case "Boolean"
+            Get_DataType_AsString_ByString = "YESNO"
             
-        Case vtAuto
-            Get_DataType = "AUTOINCREMENT"
+        Case "Auto"
+            Get_DataType_AsString_ByString = "AUTOINCREMENT"
             
         Case Else
-            Get_DataType = "TEXT"
+            Get_DataType_AsString_ByString = "TEXT"
             
     End Select
 End Function

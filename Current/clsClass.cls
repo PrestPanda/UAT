@@ -21,7 +21,7 @@ Public Sub Build(strClassName As String, Properties() As Variant, Methods() As V
     
     'Create VBA Code
     strVBACode = Coding_VBA.Get_Code_ClassModule(strClassName, Properties(), Methods())
-    ClassModule_CreateNew strClassName, strVBACode
+    ClassModule_CreateNew "cls" & strClassName, strVBACode
    
      
     'Create Table
@@ -29,6 +29,7 @@ Public Sub Build(strClassName As String, Properties() As Variant, Methods() As V
     
     
     Log.WriteLine "Klasse wurde erstellt."
+    Log.WriteEmptyLine
 
 End Sub
 
@@ -41,6 +42,8 @@ Public Sub ClassModule_CreateNew(strClassName As String, Optional strVBACode As 
     Set objVBComp = Application.VBE.ActiveVBProject.VBComponents.Add(vbext_ct_ClassModule)
     objVBComp.CodeModule.AddFromString strVBACode
     objVBComp.Name = strClassName
+    
+    DoCmd.Save acModule, strClassName
 
     Log.WriteLine "Klassenmodul " & strClassName & " erstellt und VBA Code eingefügt."
     
