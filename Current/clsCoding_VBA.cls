@@ -28,8 +28,8 @@ Public Function Get_Code_ClassModule(strClassName As String, _
   
     
     strCode = Get_Code_ClassModule_PrivateVariables(Properties()) & vbNewLine
-    strCode = strCode & Get_Code_ClassModule_Properties(Properties()) & vbNewLine
-    strCode = strCode & Get_Code_Module_Methods(strTableName, Properties(), Methods()) & vbNewLine
+    strCode = strCode & vbNewLine & Get_Code_ClassModule_Properties(Properties()) & vbNewLine
+    strCode = strCode & vbNewLine & Get_Code_Module_Methods(strTableName, Properties(), Methods()) & vbNewLine
 
     Get_Code_Module = strCode
 
@@ -72,7 +72,7 @@ ByVal strDataType As String) As String
 
     Get_Code_PrivateVariable_AsString_ByString = _
         Coding.Get_Variable_DimensionStatement_ByString( _
-            vPrivate, strName, strDataType)
+             "Private", strName, strDataType)
 
 End Function
 '-------------------------------------------- CODE - Module - PROPERTIES -----------------------------------
@@ -85,8 +85,7 @@ Public Function Get_Code_ClassModule_Properties(Properties() As Variant) As Stri
    For lngCounter = LBound(Properties()) To UBound(Properties())
     
         If strCode = "" Then
-            strCode = strCode & _
-                Get_Code_Module_Property_ByString( _
+            strCode = Get_Code_Module_Property_ByString( _
                 Properties(lngCounter, 1), _
                 Properties(lngCounter, 2), "Public")
         Else
@@ -115,7 +114,7 @@ Public Function Get_Code_Module_Property_ByString(ByVal strPropertyName As Strin
     strCode = Get_Code_Module_Property_Get_ByString(strPropertyName, strDataType, strVisibility)
     strCode = strCode & vbNewLine & Get_Code_Module_Property_Let_ByString(strPropertyName, strDataType, strVisibility)
                             
-    Get_Code_Module_Property = strCode
+    Get_Code_Module_Property_ByString = strCode
             
 End Function
 Public Function Get_Code_Module_Property_Get_ByString(strPropertyName As String, _
@@ -160,14 +159,14 @@ Public Function Get_Code_Module_Methods(strTableName As String, _
     
    For lngCounter = LBound(Methods()) To UBound(Methods())
     
-        If IsNull(DLookup("FunctionName", "110_tblClassBuilder_Method_Draft", _
+        If IsNull(DLookup("Name", "110_tblClassBuilder_Method_Draft", _
             "Name = '" & Methods(lngCounter, 1) & "'")) = False Then
             
             'Code der Standardmethode in den Wrap einfügen
-'            strCodeAddition = Get_Code_Module_Method_Draft( _
-'                strTableName, _
-'                DLookup("FunctionName", "110_tblClassBuilder_Method_Draft", _
-'                "Name = '" & Methods(lngCounter, 1) & "'"))
+            strCodeAddition = Get_Code_Module_Method_Draft( _
+                strTableName, _
+                DLookup("Name", "110_tblClassBuilder_Method_Draft", _
+                "Name = '" & Methods(lngCounter, 1) & "'"), Properties())
             
         Else
         
@@ -192,10 +191,11 @@ Public Function Get_Code_Module_Methods(strTableName As String, _
 End Function
 '-------------------------------------------- DRAFT SELECT -----------------------------------
 Public Function Get_Code_Module_Method_Draft(strTableName As String, _
-    strDraftName As String, Properties() As Variant) As String
+    strDraftName As String, _
+    Properties() As Variant) As String
 'Refactored
 
-    Select Case DLookup("Package_PK", "110_tblCLassBuilder_Method_Draft", "Name = '" & strDraftName & "'")
+    Select Case DLookup("Package_FK", "110_tblCLassBuilder_Method_Draft", "Name = '" & strDraftName & "'")
     
         Case DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & "DB" & "'")
             Get_Code_Module_Method_Draft = _
@@ -203,7 +203,7 @@ Public Function Get_Code_Module_Method_Draft(strTableName As String, _
         
         Case DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & "Standard" & "'")
             Get_Code_Module_Method_Draft = _
-                Get_Code_Module_Method_Draft_Standard(strDraftName, Properties())
+                Get_Code_Module_Method_Draft_Standard(strTableName, strDraftName, Properties())
                 
         Case DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & "Tracking" & "'")
         
@@ -215,17 +215,40 @@ Public Function Get_Code_Module_Method_Draft(strTableName As String, _
 
 End Function
 '-------------------------------------------- DRAFT Standard -----------------------------------
-Public Function Get_Code_Module_Method_Draft_Standard(strDraftName As String, Properties() As Variant) As String
+Public Function Get_Code_Module_Method_Draft_Standard(strTableName As String, _
+    strDraftName As String, _
+    Properties() As Variant) As String
 'Refactored
+    
+    Dim strCode As String
 
     Select Case strDraftName
     
         Case "Reset"
-            Get_Code_Module_Method_Draft_Standard = _
-                Get_Code_Module_Method_Draft_Standard_Reset(Properties())
+            strCode = Get_Code_Module_Method_Draft_Standard_Reset(Properties())
+                
+'        Case "Validate_Add"
+'            strCode = Get_Code_Module_Method_Draft_Standard_Validate_Add(strTableName, strDraftName, Properties())
+        
+        Case "Exists"
+            strCode = Get_Code_Module_Method_Draft_Standard_Exists()
+                
+        Case "Delete"
+            strCode = Get_Code_Module_Method_Draft_Standard_Delete()
+                
+        Case "Load"
+            strCode = Get_Code_Module_Method_Draft_Standard_Load()
+                
+        Case "LoadByID"
+            strCode = Get_Code_Module_Method_Draft_Standard_LoadByID()
+                
+        Case "Save"
+            strCode = Get_Code_Module_Method_Draft_Standard_Save()
         
     
     End Select
+    
+    Get_Code_Module_Method_Draft_Standard = strCode
 
 End Function
 Public Function Get_Code_Module_Method_Draft_Standard_Reset(Properties() As Variant) As String
@@ -260,7 +283,7 @@ Public Function Get_Code_Module_Method_Draft_Standard_Reset(Properties() As Vari
                 
         End Select
 
-        strCode = strCode & "    Me." & Coding.Get_Variable_Name_AsString_ByString( _
+        strCode = strCode & "    " & Coding.Get_Variable_Name_AsString_ByString( _
             Properties(lngCounter, 1), _
             Properties(lngCounter, 2)) & " = " & strDefaultValue & vbCrLf
             
@@ -272,6 +295,97 @@ Public Function Get_Code_Module_Method_Draft_Standard_Reset(Properties() As Vari
     Get_Code_Module_Method_Draft_Standard_Reset = strCode
 
 End Function
+'Zunächst On hold, da zunächst die anderen Functions geschrieben werden müssen.
+'Public Function Get_Code_Module_Method_Draft_Standard_Validate_Add(strTableName As String, _
+'    strDraftName As String, _
+'    Properties()) As String
+'
+'    Dim strCode As String
+'
+'    strCode = "Public Sub Validate_Add" & "()" & vbCrLf & vbCrLf
+'
+'    strCode = "if lngID = 0 then" & vbNewLine & vbNewLine & _
+'        vbTab & "'To-Do: Hier Code für die Validierung einfügen." & vbNewLine & _
+'        vbTab & "Validate_Add = True" & vbNewLine & vbNewLine & _
+'        "Else" & vbNewLine & vbNewLine & _
+'        vbTab & "MsgBox"
+'        vbTab & "Validate_Add = False" & vbNewLine & vbNewLine & _
+'        "End if"
+'
+'
+'    strCode = strCode & vbCrLf & "End Sub" & vbCrLf
+'
+'    Get_Code_Module_Method_Draft_Standard_Validate_Add = strCode
+'
+'End Function
+Public Function Get_Code_Module_Method_Draft_Standard_Exists() As String
+
+    Dim strCode As String
+
+    strCode = _
+        "If DB_Check = True Then" & vbCrLf & _
+        vbTab & "Exists = True" & vbCrLf & _
+        "Else" & vbCrLf & _
+        vbTab & "Exists = False" & vbCrLf & _
+        "End If"
+
+    Get_Code_Module_Method_Draft_Standard_Exists = _
+        Get_Code_Wrap_VBA_Method(vPublic, mtFunction, "Exists", "", strCode, vtBoolean)
+
+End Function
+Public Function Get_Code_Module_Method_Draft_Standard_Delete() As String
+
+    Dim strCode As String
+
+    strCode = _
+        "If Exists = True Then" & vbCrLf & _
+        vbTab & "DB_Delete" & vbCrLf & _
+        "End If"
+
+    Get_Code_Module_Method_Draft_Standard_Delete = _
+        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "Delete", "", strCode, vtNoType)
+
+End Function
+Public Function Get_Code_Module_Method_Draft_Standard_Load() As String
+
+    Dim strCode As String
+
+    strCode = "DB_Load"
+
+    Get_Code_Module_Method_Draft_Standard_Load = _
+        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "Load", "", strCode, vtNoType)
+
+End Function
+Public Function Get_Code_Module_Method_Draft_Standard_LoadByID() As String
+
+    Dim strCode As String
+
+    strCode = _
+        "lngID = CLng(InputBox(""Bitte ID eingeben"", ""Datensatz laden""))" & vbCrLf & _
+        "If lngID > 0 Then" & vbCrLf & _
+        vbTab & "Load" & vbCrLf & _
+        "End If"
+
+    Get_Code_Module_Method_Draft_Standard_LoadByID = _
+        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "LoadByID", "", strCode, vtNoType)
+
+End Function
+Public Function Get_Code_Module_Method_Draft_Standard_Save() As String
+
+    Dim strCode As String
+
+    strCode = _
+        "If Exists = True Then" & vbCrLf & _
+        vbTab & "DB_Update" & vbCrLf & _
+        "Else" & vbCrLf & _
+        vbTab & "DB_Insert" & vbCrLf & _
+        "End If"
+
+    Get_Code_Module_Method_Draft_Standard_Save = _
+        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "Save", "", strCode, vtNoType)
+
+End Function
+
 '-------------------------------------------- DRAFT DB -----------------------------------
 Public Function Get_Code_Module_Method_Draft_DB(strTableName As String, _
     strDraftName As String, Properties() As Variant) As String

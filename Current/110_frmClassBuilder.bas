@@ -58,25 +58,31 @@ Private Sub ApplyDefaultSettings()
     Listbox_Clear Me.Name, lstPreviewProperties
     
 End Sub
-
 Private Sub cmdAddProperty_Click()
-'TO-DO: Prüfung einbauen, die prüft, ob der Name bereits von einem Draft genutzt wird.
-'Sollte dies der Fall sein, muss das Hinzufügen abgebrochen werden
 
     If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
+    
+        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.value & "'")) = False Then
+            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
+                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
+            Exit Sub
+        End If
      
-            If ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.value) = False Then
+        If ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.value) = False Then
 
-                lstPreviewProperties.AddItem txtAddPropertyName.value & ";" & _
-                    cmbAddPropertyType.Column(1)
-                    
-                txtAddPropertyName.value = ""
-                cmbAddPropertyType.value = ""
-            Else
+            lstPreviewProperties.AddItem txtAddPropertyName.value & ";" & _
+                cmbAddPropertyType.Column(1)
+                
+            txtAddPropertyName.value = ""
+            cmbAddPropertyType.value = ""
             
-                MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
+            txtAddPropertyName.SetFocus
             
-            End If
+        Else
+        
+            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
+        
+        End If
         
     Else
         
@@ -87,9 +93,6 @@ Private Sub cmdAddProperty_Click()
 
 End Sub
 Private Sub cmdAddMethod_Click()
-
-    'TO-DO: Prüfung einbauen, die prüft, ob der Name bereits von einem Draft genutzt wird.
-    'Sollte dies der Fall sein, muss das Hinzufügen abgebrochen werden
 
     Dim strVisability As String
     Dim strType As String
@@ -105,7 +108,13 @@ Private Sub cmdAddMethod_Click()
     
     If txtAddMethodName <> "" Then
     
-        If ListBox_ContainsValue_InColumn(Me.Name, lstPreviewMethods, 0, txtAddMethodName) = False Then
+        If IsNull(DLookup("ID", "110_tblClassBuilder_Method_Draft", "Name = '" & txtAddMethodName & "'")) = False Then
+            MsgBox "Der Name der Methode ist bereits an eine andere Methode vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
+                "Bitte passen Sie den Namen der Methode an und probieren Sie es erneut."
+            Exit Sub
+        End If
+    
+        If ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewMethods", 0, txtAddMethodName) = False Then
     
             If optMethodAddPrivate = True Then strVisability = "Private"
             If optMethodAddPublic = True Then strVisability = "Public"
@@ -119,6 +128,8 @@ Private Sub cmdAddMethod_Click()
                 
             txtAddMethodName.value = ""
             ApplyDefaultSettings
+            
+            txtAddMethodName.SetFocus
         
         Else
         
@@ -148,7 +159,6 @@ Private Sub cmdCreateClass_Click()
 
 
 End Sub
-
 Private Sub Load_Packages()
 
       Dim intRow As Long
@@ -189,8 +199,6 @@ ExitSub:
 
 End Sub
 Private Sub lstPackages_AfterUpdate()
-'In Refactoring
-'Problem: Es werden beim Select und Deselect alle manuell hinzu gefügten Eigenschaften gelöscht.
 
     Dim Packages As Variant
     Dim strCurrentPackage_Name As String
@@ -226,7 +234,7 @@ Private Sub lstPackages_AfterUpdate()
                         If ListBox_ContainsValue(Me.Name, "lstPreviewProperties", rcsPackage_Properties.Fields("Name").value) = False Then
                             'Eintrag hinzufügen
                             lstPreviewProperties.AddItem rcsPackage_Properties.Fields("Name").value & ";" & _
-                                DLookup("name", "110_tblClassBuilder_Property_Type", rcsPackage_Properties.Fields("Type_FK").value)
+                                DLookup("name", "110_tblClassBuilder_Property_Type", "ID = " & rcsPackage_Properties.Fields("Type_FK").value)
                         End If
                         
                     Else
@@ -262,8 +270,8 @@ Private Sub lstPackages_AfterUpdate()
                     
                         If ListBox_ContainsValue(Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").value) = False Then
                             lstPreviewMethods.AddItem rcsPackage_Methods.Fields("Name").value & ";" & _
-                                DLookup("name", "110_tblClassBuilder_Visability", rcsPackage_Methods.Fields("Visability_FK").value) & ";" & _
-                                DLookup("name", "110_tblClassBuilder_Method_Type", rcsPackage_Methods.Fields("Type_FK").value)
+                                DLookup("name", "110_tblClassBuilder_Visability", "ID = " & rcsPackage_Methods.Fields("Visability_FK").value) & ";" & _
+                                DLookup("name", "110_tblClassBuilder_Method_Type", "ID = " & rcsPackage_Methods.Fields("Type_FK").value)
                         End If
                         
                     Else
