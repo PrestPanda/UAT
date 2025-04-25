@@ -262,7 +262,8 @@ Private Sub lstPackages_AfterUpdate()
                     
                         If ListBox_ContainsValue(Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").value) = False Then
                             lstPreviewMethods.AddItem rcsPackage_Methods.Fields("Name").value & ";" & _
-                                DLookup("name", "110_tblClassBuilder_Property_Type", rcsPackage_Methods.Fields("Type_FK").value)
+                                DLookup("name", "110_tblClassBuilder_Visability", rcsPackage_Methods.Fields("Visability_FK").value) & ";" & _
+                                DLookup("name", "110_tblClassBuilder_Method_Type", rcsPackage_Methods.Fields("Type_FK").value)
                         End If
                         
                     Else
