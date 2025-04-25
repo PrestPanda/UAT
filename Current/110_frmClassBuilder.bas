@@ -65,7 +65,7 @@ Private Sub cmdAddProperty_Click()
 
     If txtAddPropertyName.value <> "" And cmbAddPropertyType.value <> "" Then
      
-            If ListBox_ContainsValue_InColumn(Me.Name, lstPreviewProperties, 0, txtAddPropertyName.value) = False Then
+            If ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.value) = False Then
 
                 lstPreviewProperties.AddItem txtAddPropertyName.value & ";" & _
                     cmbAddPropertyType.Column(1)
@@ -193,112 +193,98 @@ Private Sub lstPackages_AfterUpdate()
 'Problem: Es werden beim Select und Deselect alle manuell hinzu gefügten Eigenschaften gelöscht.
 
     Dim Packages As Variant
-    Dim Selected As Variant
     Dim strCurrentPackage_Name As String
     Dim blnCurrentPackage_Selected As Boolean
-    
+
     Dim lngCounter_Packages As Long
-    Dim lngCounter_PackageProperties As Long
-    Dim lngCounter_PackageMethods As Long
+    Dim rcsPackage_Properties As Recordset
+    Dim rcsPackage_Methods As Recordset
     
     Packages = ListBox_Get_Array(Me.Name, lstPackages)
-    Selected = ListBox_Get_Array_Selected(Me.Name, lstPackages)
+
 
     If Not IsEmpty(Packages) Then
     
         For lngCounter_Packages = LBound(Packages) To UBound(Packages)
         
-        
-        
+            strCurrentPackage_Name = Packages(lngCounter_Packages, 1)
+            blnCurrentPackage_Selected = ListBox_IsValueSelected(Me.Name, "lstPackages", 0, strCurrentPackage_Name)
+            
+            'Eigenschaften des Pakets
+            Set rcsPackage_Properties = CurrentDb.OpenRecordset("SELECT * FROM 110_tblClassBuilder_Property_Draft " & _
+                "WHERE Package_FK = " & _
+                DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & strCurrentPackage_Name & "'"))
+                
+            If rcsPackage_Properties.RecordCount > 0 Then
+            
+                rcsPackage_Properties.MoveFirst
+                
+                Do
+                
+                    If blnCurrentPackage_Selected = True Then
+                    
+                        If ListBox_ContainsValue(Me.Name, "lstPreviewProperties", rcsPackage_Properties.Fields("Name").value) = False Then
+                            'Eintrag hinzufügen
+                            lstPreviewProperties.AddItem rcsPackage_Properties.Fields("Name").value & ";" & _
+                                DLookup("name", "110_tblClassBuilder_Property_Type", rcsPackage_Properties.Fields("Type_FK").value)
+                        End If
+                        
+                    Else
+                    
+                        If ListBox_ContainsValue(Me.Name, "lstPreviewProperties", rcsPackage_Properties.Fields("Name").value) = True Then
+                            'Eintrag löschen
+                            ListBox_RemoveValue Me.Name, "lstPreviewProperties", rcsPackage_Properties.Fields("Name").value
+                        End If
+                    
+                    End If
+                       
+                    rcsPackage_Properties.MoveNext
+                
+                Loop While rcsPackage_Properties.EOF = False
+                
+            
+            End If
+            
+            
+            
+            'Methoden des Pakets
+            Set rcsPackage_Methods = CurrentDb.OpenRecordset("SELECT * FROM 110_tblClassBuilder_Method_Draft " & _
+                "WHERE Package_FK = " & _
+                DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & strCurrentPackage_Name & "'"))
+                
+            If rcsPackage_Methods.RecordCount > 0 Then
+            
+                rcsPackage_Methods.MoveFirst
+                
+                Do
+                
+                    If blnCurrentPackage_Selected = True Then
+                    
+                        If ListBox_ContainsValue(Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").value) = False Then
+                            lstPreviewMethods.AddItem rcsPackage_Methods.Fields("Name").value & ";" & _
+                                DLookup("name", "110_tblClassBuilder_Property_Type", rcsPackage_Methods.Fields("Type_FK").value)
+                        End If
+                        
+                    Else
+                    
+                        If ListBox_ContainsValue(Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").value) = True Then
+                            'Eintrag löschen
+                            ListBox_RemoveValue Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").value
+                        End If
+                    
+                    End If
+                       
+                    rcsPackage_Methods.MoveNext
+                
+                Loop While rcsPackage_Methods.EOF = False
+                
+            
+            End If
         
         Next lngCounter_Packages
-    
+        
     End If
     
-        'Schleife durch alle Pakete
-            
-                'Schleife durch die Eigenschaften des Pakets
-            
-                    'Wenn Eintrag ausgewählt, dann
-                        'Prüfen, ob die Eigenschaften des Pakets in der Listbox Properties vorhanden sind
-                        'Wenn nicht, sollen die Eigenschaften hinzugefügt werden
-                        
-                        
-                    
-                    'else Wenn Eintrag nicht ausgewählt
-                    
-                        'Prüfen, ob die Eigenschaften des Pakets in der Listbox Properties vorhanden sind
-                        'Falls ja
-                        
-                        
-                    'end if
-                    
-                'Schleife durch alle Methoden des Pakets
-
-        
-        'Schleife durch alle Pakete
-        
-        Dim rcsPropertiesCurrentPackage As Recordset
-    Dim rcsMethodsCurrentPackage As Recordset
-    Dim intCounterArray As Integer
-    Dim PreviewProperties() As Variant
-    Dim lngPackageID As Long
-        
-        lstPreviewProperties.ColumnCount = 2
-        lstPreviewMethods.ColumnCount = 3
-    
-        
-        For intCounterArray = LBound(Selected) To UBound(Selected)
-        
-            lngPackageID = DLookup("ID", "110_tblClassBuilder_Package", "Name ='" & Selected(intCounterArray) & "'")
-        
-            'Eigenschaften hinzufügen
-            Set rcsPropertiesCurrentPackage = CurrentDb.OpenRecordset( _
-            "SELECT * FROM 110_tblClassBuilder_Property_Draft " & _
-            "WHERE Package_FK = " & lngPackageID)
-                
-            If rcsPropertiesCurrentPackage.RecordCount > 0 Then
-            
-                rcsPropertiesCurrentPackage.MoveFirst
-                
-                Do
-        
-                    lstPreviewProperties.AddItem rcsPropertiesCurrentPackage.Fields("Name").value & ";" & _
-                        DLookup("Name", "110_tblClassBuilder_Property_Type", " ID = " & rcsPropertiesCurrentPackage.Fields("Type_FK").value)
-        
-                    rcsPropertiesCurrentPackage.MoveNext
-            
-                Loop While rcsPropertiesCurrentPackage.EOF = False
-            
-            End If
-            
-            
-            'Methoden hinzufügen
-            Set rcsMethodsCurrentPackage = CurrentDb.OpenRecordset( _
-            "SELECT * FROM 110_tblClassBuilder_Method_Draft " & _
-            "WHERE Package_FK = " & lngPackageID)
-            
-            If rcsMethodsCurrentPackage.RecordCount > 0 Then
-            
-                rcsMethodsCurrentPackage.MoveFirst
-                
-                Do
-        
-                    lstPreviewMethods.AddItem _
-                        rcsMethodsCurrentPackage.Fields("Name").value & ";" & _
-                        DLookup("Name", "110_tblClassBuilder_Method_Type", "ID = " & rcsMethodsCurrentPackage.Fields("Type_FK").value) & ";" & _
-                        DLookup("Name", "110_tblClassBuilder_Visability", "ID = " & rcsMethodsCurrentPackage.Fields("Visability_FK").value)
-        
-                    rcsMethodsCurrentPackage.MoveNext
-            
-                Loop While rcsMethodsCurrentPackage.EOF = False
-                
-            End If
-        
-        Next intCounterArray
-
-
-
 End Sub
 Private Sub cmdPreviewMethod_MoveDown_Click()
     ListBox_Item_Move lstPreviewMethods, Down
@@ -395,7 +381,7 @@ Public Sub SyncOptionFields( _
 
 End Sub
 
-Public Sub ListBox_Item_Move(objListBox As Listbox, Direction As enuDirection)
+Public Sub ListBox_Item_Move(objListBox As ListBox, Direction As enuDirection)
 'To-Do: Refactor
     ' Verschiebt die markierte Zeile in einer mehrspaltigen Access-ListBox (Value List) um eine Position
     ' Unterstützt beliebig viele Spalten – funktioniert nur mit RowSourceType = "Value List"
