@@ -19,12 +19,12 @@ Private Sub cmdExportComponents_Click()
 
     Dim strCommitMessage As String
     
-    strCommitMessage = Me.txtCommitMessage.value
+    strCommitMessage = Me.txtCommitMessage.Value
 
 
     Dim msgEmptyCommitMessage As VbMsgBoxResult
     
-    If txtCommitMessage.value = "" Or IsNull(txtCommitMessage) = True Then
+    If txtCommitMessage.Value = "" Or IsNull(txtCommitMessage) = True Then
         msgEmptyCommitMessage = _
             MsgBox("Möchten Sie den Commit wirklich ohne eine Nachricht durchführen?", vbYesNo)
     End If
@@ -42,7 +42,7 @@ End Sub
 
 Private Sub cmdOpenClassBuilder_Click()
 
-    DoCmd.OpenForm "110_frmClassBuilder", acNormal, , , acFormAdd, acWindowNormal
+    DoCmd.OpenForm "110_frmClassBuilder", acNormal
 
 End Sub
 

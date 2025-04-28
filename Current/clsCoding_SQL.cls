@@ -13,6 +13,23 @@ Public Enum enuCoding_SQL_DataTypes
     sqldtString
 
 End Enum
+Public Function Get_CDate_ByDate_AsString(datDate As Date) As String
+' Konvertiert ein Datum in einen Double und gibt es als String zurück (mit Punkt als Dezimaltrennzeichen)
+
+    Dim dblDate As Double
+    Dim strDate As String
+
+    If IsNull(datDate) Then
+        Get_CDate_ByDate_AsString = "NULL"
+    Else
+        dblDate = CDbl(datDate)
+        strDate = CStr(dblDate)
+        strDate = Replace(strDate, ",", ".") ' Komma durch Punkt ersetzen
+        Get_CDate_ByDate_AsString = strDate
+    End If
+
+End Function
+
 '-------------------------------------------- FORMAT -----------------------------------
 Public Function Format_Value(ByVal varValue As Variant) As String
 'Refactored
@@ -113,26 +130,29 @@ Public Function Get_DB_Activate(strTableName As String) As String
 'Refactored
 'Generates SQL Code for Activating a dataset from an object
 
-    Get_DB_Activate = "UPDATE " & strTableName & " SET Active = true " & "WHERE ID =""" & "& lngID"
+    Get_DB_Activate = """UPDATE " & strTableName & " SET Active = true " & "WHERE ID =""" & "& lngID"
 
 End Function
 Public Function Get_DB_Deactivate(strTableName As String) As String
 'Refactored
 'Generates SQL Code for Deactivating a dataset from an object
 
-    Get_DB_Deactivate = "UPDATE " & strTableName & " SET Active = false " & "WHERE ID =""" & "& lngID"
+    Get_DB_Deactivate = """UPDATE " & strTableName & " SET Active = false " & "WHERE ID =""" & "& lngID"
 
 End Function
 Public Function Get_DB_Delete(strTableName As String) As String
 'Refactored
 'Generates SQL Code for Deleting a dataset from an object
 
-    Get_DB_Delete = "DELETE * FROM " & strTableName & " " & "WHERE ID =""" & "& lngID"
+    Get_DB_Delete = """DELETE * FROM " & strTableName & " " & "WHERE ID =""" & "& lngID"
 
 End Function
 Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) As String
 'In Refactoring
 'Generates VBA Code for Inserting a dataset into an object
+'Zunächst sollen nur die privaten Variablen für das auslesen der Werte genutzt werden
+'Mit Einbau der Enumerations soll dies angepasst werden, dass je nach Fall
+    'entweder die private Variable oder der Wert der Property genommen werden sollen
 
     Dim lngCounter As Long
     Dim strColumns As String
@@ -140,28 +160,57 @@ Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) A
     Dim strCode As String
 
     For lngCounter = LBound(Properties()) To UBound(Properties())
-    
-        If Properties(lngCounter, 1) <> "ID" Then
+
+        strColumns = strColumns & Properties(lngCounter, 1) & ", "
+
+        If Properties(lngCounter, 1) = "ID" Then
+
+            If strValues = "" Then
+                strValues = """ & " & " lngID & " & """, "
+            Else
+                strValues = strValues & " & lngID & """ & ", "
+            End If
+
+        Else
         
-            strColumns = strColumns & Properties(lngCounter, 1) & ", "
-            
-            strValues = strValues & _
-                Coding_SQL.Get_Code_Variable_AsString_ByString( _
-                    Properties(lngCounter, 1), _
+           If strValues = "" Then
+           
+                strValues = """" & _
+                    Get_Code_Variable_AsString_ByString( _
+                    Coding.Get_Variable_Name_AsString_ByString( _
+                        Properties(lngCounter, 1), _
+                        Properties(lngCounter, 2)), _
                     Properties(lngCounter, 2)) & ", "
+                
+            Else
+            
+                strValues = strValues & _
+                    Get_Code_Variable_AsString_ByString( _
+                    Coding.Get_Variable_Name_AsString_ByString( _
+                        Properties(lngCounter, 1), _
+                        Properties(lngCounter, 2)), _
+                    Properties(lngCounter, 2)) & ", "
+                    
+            End If
+
+
         End If
-        
+
     Next lngCounter
 
     ' Entferne das letzte Komma und Leerzeichen
     strColumns = Left(strColumns, Len(strColumns) - 2)
     strValues = Left(strValues, Len(strValues) - 2)
 
-    strCode = "INSERT INTO " & strTableName & vbNewLine & _
-                " (" & strColumns & ") " & vbNewLine & _
-                "VALUES (" & strValues & ")"""
+    strCode = """INSERT INTO " & strTableName & " " & """ & _" & vbNewLine & _
+                vbTab & """(" & strColumns & ") """ & " & _" & vbNewLine & _
+                vbTab & """VALUES (" & strValues & ")"""
 
     Get_DB_Insert = strCode
+
+
+
+
     
 End Function
 Public Function Get_DB_Load(strTableName As String) As String
@@ -180,10 +229,27 @@ Public Function Get_DB_Update(strTableName As String, Properties() As Variant) A
     For lngCounter = LBound(Properties()) To UBound(Properties())
     
         If Properties(lngCounter, 1) <> "ID" Then
-            strUpdates = strUpdates & Properties(lngCounter, 1) & " = " & _
-                Coding.Get_Variable_Name_AsString_ByString( _
-                    CStr(Properties(lngCounter, 1)), _
-                    CStr(Properties(lngCounter, 2))) & ", "
+        
+            If strUpdates = "" Then
+            
+                strUpdates = Properties(lngCounter, 1) & " = " & _
+                    Get_Code_Variable_AsString_ByString( _
+                        Coding.Get_Variable_Name_AsString_ByString( _
+                            Properties(lngCounter, 1), _
+                            Properties(lngCounter, 2)), _
+                        Properties(lngCounter, 2)) & ", "
+            
+            Else
+            
+                strUpdates = strUpdates & Properties(lngCounter, 1) & " = " & _
+                    Get_Code_Variable_AsString_ByString( _
+                        Coding.Get_Variable_Name_AsString_ByString( _
+                            Properties(lngCounter, 1), _
+                            Properties(lngCounter, 2)), _
+                        Properties(lngCounter, 2)) & ", "
+        
+            End If
+            
         End If
         
     Next lngCounter
@@ -191,7 +257,7 @@ Public Function Get_DB_Update(strTableName As String, Properties() As Variant) A
     ' Entferne das letzte Komma und Leerzeichen
     strUpdates = Left(strUpdates, Len(strUpdates) - 2)
 
-    Get_DB_Update = "UPDATE " & strTableName & " SET " & strUpdates & " WHERE ID = """ & " &  lngID"
+    Get_DB_Update = """UPDATE " & strTableName & " SET " & strUpdates & " WHERE ID = """ & " &  lngID"
 
 End Function
 
@@ -259,7 +325,8 @@ Private Function Get_DataType_AsString_ByEnum(DataType As enuCoding_DataTypes) A
     End Select
     
 End Function
-Public Function Get_Code_Variable_AsString_ByString(ByVal strVariableName As String, ByVal strDataType As String) As String
+Public Function Get_Code_Variable_AsString_ByString(ByVal strVariableName As String, _
+    ByVal strDataType As String) As String
 'Refactored
     ' Erkennt den Datentyp und erzeugt VBA-Code für SQL-Insertion
     
@@ -269,13 +336,13 @@ Public Function Get_Code_Variable_AsString_ByString(ByVal strVariableName As Str
             Get_Code_Variable_AsString_ByString = "'"" & " & strVariableName & " & ""'"
             
         Case vtLong, vtDouble
-            Get_Code_Variable_AsString_ByString = "" & strVariableName & ""
+            Get_Code_Variable_AsString_ByString = """ & " & strVariableName & " & """
             
         Case vtDate
-            Get_Code_Variable_AsString_ByString = "#" & strVariableName & "#"
+            Get_Code_Variable_AsString_ByString = """ & Get_CDate_ByDate_AsString(" & strVariableName & ") & """
             
         Case vtBoolean
-            Get_Code_Variable_AsString_ByString = CInt(Coding.Get_Variable_Type_AsEnum_ByString(strDataType))
+            Get_Code_Variable_AsString_ByString = """ & CInt(" & strVariableName & ") & """
             
         Case vbNull
             Get_Code_Variable_AsString_ByString = "NULL"

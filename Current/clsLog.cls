@@ -28,18 +28,18 @@ End Function
 ' Eigenschaften
 Public Property Get FullText() As String
     ' Gibt den vollständigen Log-Text zurück
-    FullText = Forms(c_strForm_Log).txtLog.value
+    FullText = Forms(c_strForm_Log).txtLog.Value
 End Property
 Public Property Let FullText(strText As String)
 
-    Forms(c_strForm_Log).txtLog.value = strText
+    Forms(c_strForm_Log).txtLog.Value = strText
 
 End Property
 
 Public Property Get LastLine() As String
     ' Gibt die letzte Zeile des Logs zurück
     Dim arrLines As Variant
-    arrLines = Split(Forms(c_strForm_Log).txtLog.value, vbCrLf)
+    arrLines = Split(Forms(c_strForm_Log).txtLog.Value, vbCrLf)
     If UBound(arrLines) >= 0 Then
         LastLine = arrLines(UBound(arrLines))
     Else
@@ -50,17 +50,17 @@ End Property
 ' Methoden
 Public Sub WriteText(strText As String)
     ' Fügt Text ohne Zeilenumbruch hinzu
-    Forms(c_strForm_Log).txtLog.value = Forms(c_strForm_Log).txtLog.value & strText
+    Forms(c_strForm_Log).txtLog.Value = Forms(c_strForm_Log).txtLog.Value & strText
 End Sub
 
 Public Sub WriteLine(strText As String)
     ' Fügt eine Zeile mit Zeilenumbruch hinzu
-    Forms(c_strForm_Log).txtLog.value = Forms(c_strForm_Log).txtLog.value & Get_WrapLine(strText) & vbCrLf
+    Forms(c_strForm_Log).txtLog.Value = Forms(c_strForm_Log).txtLog.Value & Get_WrapLine(strText) & vbCrLf
 End Sub
 
 Public Sub WriteEmptyLine()
     ' Fügt eine leere Zeile hinzu
-    Forms(c_strForm_Log).txtLog.value = Forms(c_strForm_Log).txtLog.value & vbCrLf
+    Forms(c_strForm_Log).txtLog.Value = Forms(c_strForm_Log).txtLog.Value & vbCrLf
 End Sub
 
 Public Sub Write_Application_WelcomeMessage(strApplicationName As String)

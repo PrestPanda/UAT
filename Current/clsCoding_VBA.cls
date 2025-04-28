@@ -531,7 +531,7 @@ End Function
 Public Function Get_Code_Wrap_VBA_SQL_Statement(strSQLStatement As String) As String
 
     Get_Code_Wrap_VBA_SQL_Statement = "docmd.setwarnings false" & vbNewLine & vbNewLine & _
-                        "docmd.runsql """ & strSQLStatement & vbNewLine & vbNewLine & _
+                        "docmd.runsql " & strSQLStatement & vbNewLine & vbNewLine & _
                         "docmd.setwarnings true"
 
 End Function

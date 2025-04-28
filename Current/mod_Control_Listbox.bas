@@ -1,311 +1,359 @@
 Option Compare Database
 Option Explicit
 
-
-Public Sub Listbox_Clear(strFormName As String, objListBox As Access.ListBox)
-' Leert eine Access-Listbox unabhängig vom aktuellen RowSourceType über das Formularobjekt
-
-    Dim objForm As Access.Form
-    Set objForm = Forms(strFormName)
-
-    With objForm.Controls(objListBox.Name)
-        If .RowSourceType = "Table/Query" Or .RowSourceType = "Value List" Then
-            .RowSource = ""
-        End If
-    End With
-
-End Sub
-
-Public Function ListBox_Get_Array( _
+Private Function ListBox_Get_Object_ByName( _
     strFormName As String, _
-    objListBox As Object) As Variant()
-' Gibt ein 2D-Array mit allen Einträgen der ListBox zurück (Zeilen x Spalten)
+    strListBoxName As String) As Access.ListBox
+
+    ' Gibt das ListBox-Objekt eines angegebenen Formulars zurück
 
     Dim frm As Access.Form
+
+    If Not CurrentProject.AllForms(strFormName).IsLoaded Then
+        Set ListBox_Get_Object_ByName = Nothing
+        Exit Function
+    End If
+
+    Set frm = Forms(strFormName)
+
+    On Error GoTo Fehler
+    Set ListBox_Get_Object_ByName = frm.Controls(strListBoxName)
+    Exit Function
+
+Fehler:
+    MsgBox "Die ListBox '" & strListBoxName & "' im Formular '" & strFormName & "' konnte nicht gefunden werden.", vbExclamation
+    Set ListBox_Get_Object_ByName = Nothing
+
+End Function
+Public Sub Access_ListBox_Clear( _
+    strFormName As String, _
+    strListBoxName As String)
+
+    ' Leert eine Access-Listbox unabhängig vom aktuellen RowSourceType
+
+    Dim objListBox As Access.ListBox
+
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then Exit Sub
+
+    If objListBox.RowSourceType = "Table/Query" Or objListBox.RowSourceType = "Value List" Then
+        objListBox.RowSource = ""
+    End If
+
+End Sub
+Public Function Access_ListBox_Get_Array( _
+    strFormName As String, _
+    strListBoxName As String) As Variant()
+
+    ' Gibt ein 2D-Array mit allen Einträgen der ListBox zurück (Zeilen x Spalten)
+
+    Dim objListBox As Access.ListBox
     Dim intRows As Long
     Dim intCols As Long
     Dim intRow As Long
     Dim intCol As Long
     Dim varResult() As Variant
 
-    If Not CurrentProject.AllForms(strFormName).IsLoaded Then
-        ListBox_Get_Array = Array()
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then
+        Access_ListBox_Get_Array = Array()
         Exit Function
     End If
 
-    Set frm = Forms(strFormName)
+    intRows = objListBox.ListCount
+    intCols = objListBox.ColumnCount
 
-    With frm.Controls(objListBox.Name)
-        intRows = .ListCount
-        intCols = .ColumnCount
+    If intRows = 0 Or intCols = 0 Then
+        Access_ListBox_Get_Array = Array()
+        Exit Function
+    End If
 
-        If intRows = 0 Or intCols = 0 Then
-            ListBox_Get_Array = Array()
-            Exit Function
-        End If
+    ReDim varResult(1 To intRows, 1 To intCols)
 
-        ReDim varResult(1 To intRows, 1 To intCols)
+    For intRow = 0 To intRows - 1
+        For intCol = 0 To intCols - 1
+            varResult(intRow + 1, intCol + 1) = Nz(objListBox.Column(intCol, intRow), "")
+        Next intCol
+    Next intRow
 
-        For intRow = 0 To intRows - 1
-            For intCol = 0 To intCols - 1
-                varResult(intRow + 1, intCol + 1) = Nz(.Column(intCol, intRow), "")
-            Next intCol
-        Next intRow
-    End With
-
-    ListBox_Get_Array = varResult
+    Access_ListBox_Get_Array = varResult
 
 End Function
-Public Function ListBox_Get_Array_Selected( _
+Public Function Access_ListBox_Get_Array_Selected( _
     strFormName As String, _
-    objListBox As Object) As String()
-' Gibt die ausgewählten Einträge einer ListBox als Array zurück.
+    strListBoxName As String) As String()
 
-    Dim frm As Access.Form
+    ' Gibt die ausgewählten Einträge einer ListBox als Array zurück
+
+    Dim objListBox As Access.ListBox
     Dim i As Long, n As Long
     Dim arr() As String
 
-    If Not CurrentProject.AllForms(strFormName).IsLoaded Then
-        ListBox_Get_Array_Selected = Split("") ' leeres Array
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then
+        Access_ListBox_Get_Array_Selected = Split("") ' leeres Array
         Exit Function
     End If
-
-    Set frm = Forms(strFormName)
 
     ReDim arr(0 To 0)
     n = -1
 
-    With frm.Controls(objListBox.Name)
-        For i = 0 To .ListCount - 1
-            If .Selected(i) Then
-                n = n + 1
-                ReDim Preserve arr(0 To n)
-                arr(n) = .ItemData(i)
-            End If
-        Next i
-    End With
+    For i = 0 To objListBox.ListCount - 1
+        If objListBox.Selected(i) Then
+            n = n + 1
+            ReDim Preserve arr(0 To n)
+            arr(n) = objListBox.ItemData(i)
+        End If
+    Next i
 
     If n = -1 Then
-        ListBox_Get_Array_Selected = Split("") ' leeres Array
+        Access_ListBox_Get_Array_Selected = Split("")
     Else
-        ListBox_Get_Array_Selected = arr
+        Access_ListBox_Get_Array_Selected = arr
     End If
 
 End Function
-Public Function ListBox_SetDefaultSettings(objListBox As Object)
+Public Function Access_ListBox_SetDefaultSettings( _
+    strFormName As String, _
+    strListBoxName As String)
+
+    ' Setzt die Standardkonfiguration einer ListBox
+
+    Dim objListBox As Access.ListBox
+
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then Exit Function
 
     objListBox.RowSourceType = "Value List"
-    objListBox.MultiSelect = fmMultiSelectSingle
+    objListBox.MultiSelect = 1
 
 End Function
-Public Sub ListBox_Fill_FromArray(objListBox As MSForms.ListBox, varData As Variant)
-' Füllt eine Listbox mit den Einträgen aus einem Array
-' Unterstützt sowohl 1D- als auch 2D-Arrays
+Public Sub Access_ListBox_Fill_FromArray( _
+    strFormName As String, _
+    strListBoxName As String, _
+    varData() As Variant)
 
+    ' Füllt eine ListBox mit den Einträgen aus einem Array (1D oder 2D)
     
+    Dim objListBox As Access.ListBox
     Dim intRow As Long
     Dim intCol As Long
     Dim intRows As Long
     Dim intCols As Long
-    Dim varRow() As Variant
+    Dim strRowSource As String
+    Dim strRow As String
 
-    objListBox.Clear
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then Exit Sub
+
+    Access_ListBox_Clear strFormName, strListBoxName
 
     On Error GoTo ExitSub
+
     intRows = UBound(varData, 1)
     intCols = UBound(varData, 2)
-    ' ? 2D-Array erkannt
 
+    ' 2D-Array erkannt ? RowSource zusammenbauen
     For intRow = 1 To intRows
-        ReDim varRow(0 To intCols - 1)
+        strRow = ""
         For intCol = 1 To intCols
-            varRow(intCol - 1) = varData(intRow, intCol)
+            strRow = strRow & Nz(varData(intRow, intCol), "") & ";"
         Next intCol
-        objListBox.AddItem varRow(0)
-        For intCol = 1 To intCols - 1
-            objListBox.List(objListBox.ListCount - 1, intCol) = varRow(intCol)
-        Next intCol
+        ' Semikolon am Ende entfernen
+        If Right(strRow, 1) = ";" Then
+            strRow = Left(strRow, Len(strRow) - 1)
+        End If
+        strRowSource = strRowSource & strRow & ";"
     Next intRow
+
+    ' Gesamte RowSource setzen
+    If Len(strRowSource) > 0 Then
+        If Right(strRowSource, 1) = ";" Then
+            strRowSource = Left(strRowSource, Len(strRowSource) - 1)
+        End If
+    End If
+
+    objListBox.RowSourceType = "Value List"
+    objListBox.RowSource = strRowSource
+
     Exit Sub
 
 ExitSub:
-    ' Falls 1D-Array, wird hier weitergemacht
+    ' Falls Fehler (z.B. 1D-Array), mit AddItem arbeiten
     On Error Resume Next
-    objListBox.Clear
+    objListBox.RowSourceType = "Value List"
+    objListBox.RowSource = ""
+
     For intRow = LBound(varData) To UBound(varData)
         objListBox.AddItem varData(intRow)
     Next intRow
 
 End Sub
-Public Sub ListBox_RemoveValue( _
+
+Public Sub Access_ListBox_RemoveValue( _
     strFormName As String, _
     strListBoxName As String, _
     strValue As String)
 
-    ' Entfernt die gesamte Zeile aus der ListBox, wenn der übergebene Wert in einer der Spalten gefunden wird (nur bei RowSourceType = "Value List")
+    ' Entfernt eine komplette Zeile aus der ListBox, wenn der übergebene Wert in einer Spalte gefunden wird
 
-    Dim frm As Access.Form
+    Dim objListBox As Access.ListBox
     Dim strRowSource As String
     Dim arrRows() As String
     Dim strNewSource As String
     Dim i As Long
-    Dim arrColumns() As String
-    Dim intColumnIndex As Integer
-    Dim intTotalColumns As Integer
+    Dim intColumnIndex As Long
+    Dim intTotalColumns As Long
     Dim blnDeleteRow As Boolean
+    Dim j As Long
 
-    If Not CurrentProject.AllForms(strFormName).IsLoaded Then Exit Sub
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
 
-    Set frm = Forms(strFormName)
+    If objListBox Is Nothing Then Exit Sub
 
-    With frm.Controls(strListBoxName)
-        If .RowSourceType <> "Value List" Then
-            MsgBox "ListBox '" & .Name & "' verwendet keinen Wertelistentyp!", vbExclamation
-            Exit Sub
-        End If
+    If objListBox.RowSourceType <> "Value List" Then
+        MsgBox "ListBox '" & objListBox.Name & "' verwendet keinen Wertelistentyp!", vbExclamation
+        Exit Sub
+    End If
 
-        strRowSource = Nz(.RowSource, "")
-        If Len(strRowSource) = 0 Then Exit Sub
+    strRowSource = Nz(objListBox.RowSource, "")
+    If Len(strRowSource) = 0 Then Exit Sub
 
-        arrRows = Split(strRowSource, ";")
-        strNewSource = ""
-        intTotalColumns = .ColumnCount
+    arrRows = Split(strRowSource, ";")
+    strNewSource = ""
+    intTotalColumns = objListBox.ColumnCount
 
-        ' Durchlaufe alle Zeilen
-        For i = 0 To UBound(arrRows) Step intTotalColumns
-            blnDeleteRow = False
+    For i = 0 To UBound(arrRows) Step intTotalColumns
+        blnDeleteRow = False
 
-            ' Prüfe jede Spalte innerhalb dieser Zeile
-            Dim j As Long
+        For j = 0 To intTotalColumns - 1
+            If (i + j) <= UBound(arrRows) Then
+                If Trim(arrRows(i + j)) = strValue Then
+                    blnDeleteRow = True
+                    Exit For
+                End If
+            End If
+        Next j
+
+        If Not blnDeleteRow Then
             For j = 0 To intTotalColumns - 1
                 If (i + j) <= UBound(arrRows) Then
-                    If Trim(arrRows(i + j)) = strValue Then
-                        blnDeleteRow = True
-                        Exit For
-                    End If
+                    strNewSource = strNewSource & arrRows(i + j) & ";"
                 End If
             Next j
-
-            ' Wenn die Zeile nicht gelöscht werden soll, füge sie in den neuen RowSource ein
-            If Not blnDeleteRow Then
-                For j = 0 To intTotalColumns - 1
-                    If (i + j) <= UBound(arrRows) Then
-                        strNewSource = strNewSource & arrRows(i + j) & ";"
-                    End If
-                Next j
-            End If
-        Next i
-
-        ' Entferne das letzte Semikolon
-        If Right(strNewSource, 1) = ";" Then
-            strNewSource = Left(strNewSource, Len(strNewSource) - 1)
         End If
+    Next i
 
-        .RowSource = strNewSource
-    End With
+    If Right(strNewSource, 1) = ";" Then
+        strNewSource = Left(strNewSource, Len(strNewSource) - 1)
+    End If
+
+    objListBox.RowSource = strNewSource
 
 End Sub
-
-Public Function ListBox_ContainsValue( _
+Public Function Access_ListBox_ContainsValue( _
     strFormName As String, _
     strListBoxName As String, _
     strValue As String) As Boolean
-' Prüft, ob der übergebene Wert in einer beliebigen Spalte der ListBox enthalten ist
 
-    Dim frm As Access.Form
+    ' Prüft, ob der übergebene Wert in einer beliebigen Spalte der ListBox enthalten ist
+
+    Dim objListBox As Access.ListBox
     Dim intColumnIndex As Integer
     Dim intTotalColumns As Integer
 
-    If Not CurrentProject.AllForms(strFormName).IsLoaded Then
-        ListBox_ContainsValue = False
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then
+        Access_ListBox_ContainsValue = False
         Exit Function
     End If
 
-    Set frm = Forms(strFormName)
-
-    intTotalColumns = frm.Controls(strListBoxName).ColumnCount
+    intTotalColumns = objListBox.ColumnCount
 
     For intColumnIndex = 0 To intTotalColumns - 1
-        If ListBox_ContainsValue_InColumn(strFormName, strListBoxName, intColumnIndex, strValue) Then
-            ListBox_ContainsValue = True
+        If Access_ListBox_ContainsValue_InColumn(strFormName, strListBoxName, intColumnIndex, strValue) Then
+            Access_ListBox_ContainsValue = True
             Exit Function
         End If
     Next intColumnIndex
 
-    ListBox_ContainsValue = False
+    Access_ListBox_ContainsValue = False
 
 End Function
-Public Function ListBox_ContainsValue_InColumn( _
+Public Function Access_ListBox_ContainsValue_InColumn( _
     strFormName As String, _
-    strListBox_Name As String, _
+    strListBoxName As String, _
     intColumnIndex As Integer, _
     strValue As String) As Boolean
-' Prüft, ob der übergebene Wert in der angegebenen Spalte der ListBox enthalten ist
 
-    Dim frm As Access.Form
-    Dim lstListBox As Object
+    ' Prüft, ob der übergebene Wert in einer bestimmten Spalte der ListBox enthalten ist
+
+    Dim objListBox As Access.ListBox
     Dim i As Long
     Dim strCurrent As String
 
-    If Not CurrentProject.AllForms(strFormName).IsLoaded Then
-        ListBox_ContainsValue_InColumn = False
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then
+        Access_ListBox_ContainsValue_InColumn = False
         Exit Function
     End If
 
-    Set frm = Forms(strFormName)
-
-
-    If intColumnIndex < 0 Or intColumnIndex > frm.Controls(strListBox_Name).ColumnCount Then
-        MsgBox "Ungültige Spaltennummer (" & intColumnIndex & ") für ListBox '" & strListBox_Name & "'", vbCritical
-        ListBox_ContainsValue_InColumn = False
+    If intColumnIndex < 0 Or intColumnIndex > objListBox.ColumnCount - 1 Then
+        MsgBox "Ungültige Spaltennummer (" & intColumnIndex & ") für ListBox '" & strListBoxName & "'", vbCritical
+        Access_ListBox_ContainsValue_InColumn = False
         Exit Function
     End If
-    
-    For i = 0 To frm.Controls(strListBox_Name).ListCount - 1
-        strCurrent = Nz(frm.Controls(strListBox_Name).Column(intColumnIndex, i), "")
+
+    For i = 0 To objListBox.ListCount - 1
+        strCurrent = Nz(objListBox.Column(intColumnIndex, i), "")
         If strCurrent = strValue Then
-            ListBox_ContainsValue_InColumn = True
+            Access_ListBox_ContainsValue_InColumn = True
             Exit Function
         End If
     Next i
 
-
-    ListBox_ContainsValue_InColumn = False
+    Access_ListBox_ContainsValue_InColumn = False
 
 End Function
-Public Function ListBox_IsValueSelected( _
-    strForm_Name As String, _
-    strListBox_Name As String, _
+Public Function Access_ListBox_IsValueSelected( _
+    strFormName As String, _
+    strListBoxName As String, _
     intColumnIndex As Integer, _
     strValue As String) As Boolean
-' Prüft, ob ein bestimmter Eintrag in einer ListBox ausgewählt ist.
-    
-    Dim frm As Access.Form
+
+    ' Prüft, ob ein bestimmter Eintrag in einer ListBox ausgewählt ist
+
+    Dim objListBox As Access.ListBox
     Dim lngIndex As Long
 
-    If Not CurrentProject.AllForms(strForm_Name).IsLoaded Then
-        ListBox_IsValueSelected = False
+    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+
+    If objListBox Is Nothing Then
+        Access_ListBox_IsValueSelected = False
         Exit Function
     End If
 
-    Set frm = Forms(strForm_Name)
-
-    If Not ListBox_ContainsValue_InColumn(strForm_Name, strListBox_Name, intColumnIndex, strValue) Then
-        ListBox_IsValueSelected = False
+    If Not Access_ListBox_ContainsValue_InColumn(strFormName, strListBoxName, intColumnIndex, strValue) Then
+        Access_ListBox_IsValueSelected = False
         Exit Function
     End If
 
-    With frm.Controls(strListBox_Name)
-        For lngIndex = 0 To .ListCount - 1
-            If .Selected(lngIndex) Then
-                If .Column(intColumnIndex, lngIndex) = strValue Then
-                    ListBox_IsValueSelected = True
-                    Exit Function
-                End If
+    For lngIndex = 0 To objListBox.ListCount - 1
+        If objListBox.Selected(lngIndex) Then
+            If objListBox.Column(intColumnIndex, lngIndex) = strValue Then
+                Access_ListBox_IsValueSelected = True
+                Exit Function
             End If
-        Next lngIndex
-    End With
+        End If
+    Next lngIndex
 
-    ListBox_IsValueSelected = False
+    Access_ListBox_IsValueSelected = False
 
 End Function

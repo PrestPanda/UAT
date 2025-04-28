@@ -32,7 +32,7 @@ Public Function Get_Array_FromQuery(strQueryName As String) As Variant
 
     For intRow = 1 To intRowCount
         For intCol = 1 To intFieldCount
-            varResult(intRow, intCol) = rs.Fields(intCol - 1).value
+            varResult(intRow, intCol) = rs.Fields(intCol - 1).Value
         Next intCol
         rs.MoveNext
     Next intRow

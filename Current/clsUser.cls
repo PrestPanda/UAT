@@ -5,6 +5,8 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
+Dim Coding_SQL As New clsCoding_SQL
+
 Private lngID As Long
 Private strName As String
 Private datCreateTS As Date
@@ -136,12 +138,20 @@ Public Sub Save()
 End Sub
 Public Function Exists() As Boolean
 
-    If DB_Check = True Then
-        Exists = True
-    Else
+    If lngID = 0 Then
+    
         Exists = False
+    
+    Else
+    
+        If DB_Check = True Then
+            Exists = True
+        Else
+            Exists = False
+        End If
+    
     End If
-
+    
 End Function
 Public Sub Delete()
 
@@ -160,11 +170,11 @@ Public Sub LoadByID()
 End Sub
 Public Sub DB_Activate()
 
-    DoCmd.setwarnings False
+    DoCmd.SetWarnings False
     
     DoCmd.RunSQL "UPDATE tbl_User SET Active = true WHERE ID =" & lngID
     
-    DoCmd.setwarnings True
+    DoCmd.SetWarnings True
 
 End Sub
 Public Function DB_Check() As Boolean
@@ -178,34 +188,34 @@ Public Function DB_Check() As Boolean
 End Function
 Public Sub DB_Deactivate()
 
-    DoCmd.setwarnings False
+    DoCmd.SetWarnings False
     
     DoCmd.RunSQL "UPDATE tbl_User SET Active = false WHERE ID =" & lngID
     
-    DoCmd.setwarnings True
+    DoCmd.SetWarnings True
 
 End Sub
 Public Sub DB_Delete()
 
-    DoCmd.setwarnings False
+    DoCmd.SetWarnings False
     
     DoCmd.RunSQL "DELETE * FROM tbl_User WHERE ID =" & lngID
     
-    DoCmd.setwarnings True
+    DoCmd.SetWarnings True
 
 End Sub
 Public Sub DB_Insert()
 
-    DoCmd.setwarnings False
+    DoCmd.SetWarnings False
+    
+    lngID = DMax("ID", "tbl_User") + 1
     
     DoCmd.RunSQL "INSERT INTO tbl_User " & _
-    "(Name, CreateTS, CreateUser_FK, LastUpdateTS, LastUpdateUser_FK, IsActive, LastActiveTS, LastActiveUser_FK) " & _
-    "VALUES ('" & strName & "', #CreateTS#, CreateUser_FK, #LastUpdateTS#, LastUpdateUser_FK, 5, #LastActiveTS#, LastActiveUser_FK)"
+        "(ID, Name, CreateTS, CreateUser_FK, LastUpdateTS, LastUpdateUser_FK, IsActive, LastActiveTS, LastActiveUser_FK) " & _
+        "VALUES (" & lngID & ", '" & strName & "', " & Coding_SQL.Get_CDate_ByDate_AsString(datCreateTS) & ", " & lngCreateUser_FK & ", " & Coding_SQL.Get_CDate_ByDate_AsString(datLastUpdateTS) & ", " & lngLastUpdateUser_FK & ", " & CInt(blnIsActive) & ", " & Coding_SQL.Get_CDate_ByDate_AsString(datLastActiveTS) & ", " & lngLastActiveUser_FK & ")"
     
-    DoCmd.setwarnings True
-    
-    lngID = DMax("ID", "tbl_User")
-    
+    DoCmd.SetWarnings True
+      
 
 End Sub
 Public Sub DB_Load()
@@ -232,10 +242,10 @@ Public Sub DB_Load()
 End Sub
 Public Sub DB_Update()
 
-    DoCmd.setwarnings False
+    DoCmd.SetWarnings False
     
-    DoCmd.RunSQL "UPDATE tbl_User SET Name = strName, CreateTS = datCreateTS, CreateUser_FK = lngCreateUser_FK, LastUpdateTS = datLastUpdateTS, LastUpdateUser_FK = lngLastUpdateUser_FK, IsActive = blnIsActive, LastActiveTS = datLastActiveTS, LastActiveUser_FK = lngLastActiveUser_FK WHERE ID = " & lngID
+    DoCmd.RunSQL "UPDATE tbl_User SET Name = '" & strName & "', CreateTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datCreateTS) & ", CreateUser_FK = " & lngCreateUser_FK & ", LastUpdateTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datLastUpdateTS) & ", LastUpdateUser_FK = " & lngLastUpdateUser_FK & ", IsActive = " & CInt(blnIsActive) & ", LastActiveTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datLastActiveTS) & ", LastActiveUser_FK = " & lngLastActiveUser_FK & " WHERE ID = " & lngID
     
-    DoCmd.setwarnings True
+    DoCmd.SetWarnings True
 
 End Sub

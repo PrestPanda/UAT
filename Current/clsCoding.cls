@@ -35,9 +35,11 @@ Public Enum enuCoding_Method_Types
 
 End Enum
 
+Public Function Get_Class_Reference_DimensionStatement() As String
 
 
 
+End Function
 Public Function Get_Variable_DimensionStatement_ByEnum(Visibility As enuCoding_Visibility, strName As String, _
     DataType As enuCoding_DataTypes) As String
 'Refactored
