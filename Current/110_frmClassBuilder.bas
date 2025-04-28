@@ -352,16 +352,16 @@ End Sub
 
 '#################################### Listbox - Auswahl #############################################
 Private Sub lstPreviewMethods_Click()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewMethods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
 End Sub
 Private Sub lstPreviewMethods_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewMethods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
 End Sub
 Private Sub lstPreviewProperties_Click()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewProperties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
 End Sub
 Private Sub lstPreviewProperties_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewProperties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
 End Sub
 
 Public Sub UpdateListBoxNavigationButtons( _
@@ -511,7 +511,7 @@ Public Sub ListBox_Item_Move(objListBox As ListBox, Direction As enuDirection)
     ' Neuen Eintrag wieder markieren
     objListBox.Selected(rowB) = True
     
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewMethods, cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-    UpdateListBoxNavigationButtons Me.Name, lstPreviewProperties, cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewMethods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewProperties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
     
 End Sub

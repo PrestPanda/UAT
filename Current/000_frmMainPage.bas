@@ -40,6 +40,23 @@ Private Sub cmdExportComponents_Click()
 
 End Sub
 
+Private Sub cmdFormPopUpAdd_Click()
+
+    Dim strFormName As String
+    
+    strFormName = InputBox("Bitte geben Sie einen Namen für das Formular ein.")
+    
+    Access_Form_CreateNew strFormName
+    Access_Form_Settings_PopUp strFormName
+
+End Sub
+
+Private Sub cmdOpenApplications_Click()
+
+    DoCmd.OpenForm "210_frmApplications", acNormal
+
+End Sub
+
 Private Sub cmdOpenClassBuilder_Click()
 
     DoCmd.OpenForm "110_frmClassBuilder", acNormal

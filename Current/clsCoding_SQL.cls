@@ -277,7 +277,7 @@ Private Function Get_DataType_AsString_ByString(strDataType As String) As String
         Case "String"
             Get_DataType_AsString_ByString = "TEXT(255)"
             
-        Case "StringLong"
+        Case "Long String"
             Get_DataType_AsString_ByString = "LONGTEXT"
             
         Case "Long"

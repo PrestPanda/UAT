@@ -1,0 +1,5 @@
+Form: 210_frmApplications
+------------------------------------
+Name: Bezeichnungsfeld0	Typ: Label
+Name: Bezeichnungsfeld1	Typ: Label
+Name: cmdApplicationAdd	Typ: CommandButton

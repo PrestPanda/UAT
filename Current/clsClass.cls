@@ -46,6 +46,8 @@ Public Sub Build(strClassName As String, _
     'Create Table
     DoCmd.RunSQL Coding_SQL.Get_DB_CreateTable("tbl_" & strClassName, Properties())
     
+    Access_Form_CreateNew "frm" & strClassName
+    
     
     Log.WriteLine "Klasse wurde erstellt."
     Log.WriteEmptyLine

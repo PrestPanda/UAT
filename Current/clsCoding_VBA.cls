@@ -2,8 +2,9 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+
 Option Compare Database
-'Die Coding_VBA stellt Funktionalitäten zur automatisierten Erstellung und Bearbeitung von VBA COde bereit
+'Die Coding_VBA stellt Funktionalit?ten zur automatisierten Erstellung und Bearbeitung von VBA COde bereit
 
 
 Private Coding_SQL As New clsCoding_SQL
@@ -61,7 +62,7 @@ Public Function Get_Code_ClassModule_Class_References(Classes() As Variant) As S
     
     strCode = strCode & vbNewLine
     
-    Log.WriteLine "Code für Verweise auf Klassen wurde generiert."
+    Log.WriteLine "Code f?r Verweise auf Klassen wurde generiert."
     
     Get_Code_ClassModule_Class_References = strCode
 
@@ -73,7 +74,7 @@ End Function
 Public Function Get_Code_ClassModule_PrivateVariables(Properties() As Variant) As String
 'Refactored
 
-    Log.WriteLine "Code für private Variablen wird generiert."
+    Log.WriteLine "Code f?r private Variablen wird generiert."
     
     Dim strCode As String
 
@@ -115,7 +116,7 @@ Public Function Get_Code_ClassModule_Properties(Properties() As Variant) As Stri
 'Refactored
     Dim strCode As String
     
-    Log.WriteLine "Code für Properties wird generiert"
+    Log.WriteLine "Code f?r Properties wird generiert"
     
    For lngCounter = LBound(Properties()) To UBound(Properties())
     
@@ -158,7 +159,7 @@ Public Function Get_Code_Module_Property_Get_ByString(strPropertyName As String,
 'Refactored
 
     Get_Code_Module_Property_Get_ByString = strVisibility & _
-                            " Property Get " & strPropertyName & "() As " & strDataType & _
+                            " Property Get " & strPropertyName & "() As " & Coding.Get_Variable_Translate_Datatype(strDataType) & _
                              vbNewLine & vbNewLine & _
                              vbTab & strPropertyName & " = " & _
                              Coding.Get_Variable_Name_AsString_ByString(strPropertyName, strDataType) & _
@@ -174,7 +175,7 @@ Public Function Get_Code_Module_Property_Let_ByString(strPropertyName As String,
     Get_Code_Module_Property_Let_ByString = strVisibility & _
                             " Property Let " & strPropertyName & "(" & _
                             Coding.Get_Variable_Name_AsString_ByString(strPropertyName, strDataType) & "_1 as " & _
-                            strDataType & ")" & _
+                            Coding.Get_Variable_Translate_Datatype(strDataType) & ")" & _
                              vbNewLine & vbNewLine & _
                              vbTab & Coding.Get_Variable_Name_AsString_ByString(strPropertyName, strDataType) & " = " & _
                              Coding.Get_Variable_Name_AsString_ByString(strPropertyName, strDataType) & "_1" & _
@@ -190,14 +191,14 @@ Public Function Get_Code_Module_Methods(strTableName As String, _
     Dim strCodeAddition As String
     Dim lngCounter As Long
     
-    Log.WriteLine "Code für Methods wird generiert"
+    Log.WriteLine "Code f?r Methods wird generiert"
     
    For lngCounter = LBound(Methods()) To UBound(Methods())
     
         If IsNull(DLookup("Name", "110_tblClassBuilder_Method_Draft", _
             "Name = '" & Methods(lngCounter, 1) & "'")) = False Then
             
-            'Code der Standardmethode in den Wrap einfügen
+            'Code der Standardmethode in den Wrap einf?gen
             strCodeAddition = Get_Code_Module_Method_Draft( _
                 strTableName, _
                 DLookup("Name", "110_tblClassBuilder_Method_Draft", _
@@ -332,7 +333,7 @@ Public Function Get_Code_Module_Method_Draft_Standard_Reset(Properties() As Vari
     Get_Code_Module_Method_Draft_Standard_Reset = strCode
 
 End Function
-'Zunächst On hold, da zunächst die anderen Functions geschrieben werden müssen.
+'Zun?chst On hold, da zun?chst die anderen Functions geschrieben werden m?ssen.
 'Public Function Get_Code_Module_Method_Draft_Standard_Validate_Add(strTableName As String, _
 '    strDraftName As String, _
 '    Properties()) As String
@@ -342,7 +343,7 @@ End Function
 '    strCode = "Public Sub Validate_Add" & "()" & vbCrLf & vbCrLf
 '
 '    strCode = "if lngID = 0 then" & vbNewLine & vbNewLine & _
-'        vbTab & "'To-Do: Hier Code für die Validierung einfügen." & vbNewLine & _
+'        vbTab & "'To-Do: Hier Code f?r die Validierung einf?gen." & vbNewLine & _
 '        vbTab & "Validate_Add = True" & vbNewLine & vbNewLine & _
 '        "Else" & vbNewLine & vbNewLine & _
 '        vbTab & "MsgBox"
@@ -518,7 +519,7 @@ Public Function Get_Code_Module_Method_Draft_DB_Insert(strTableName As String, P
 End Function
 'Public Function Get_Code_Module_Method_DB_Insert_GetID(strTableName As String) As String
 ''Refactored
-''Scheinbar nicht mehr nötig wegen Get_Code_Module_Method_Draft_DB_Insert_SetValues
+''Scheinbar nicht mehr n?tig wegen Get_Code_Module_Method_Draft_DB_Insert_SetValues
 '
 '    Get_Code_Module_Method_DB_Insert_GetID = vbNewLine & vbNewLine & _
 '                                        "lngID = DMax(""" & "ID""" & ", """ & strTableName & """) + 1" & _

@@ -57,7 +57,7 @@ Public Function Get_Variable_DimensionStatement_ByString(strVisibility As String
 
     Get_Variable_DimensionStatement_ByString = strVisibility & " " & _
                                         Get_Variable_Name_AsString_ByString(strName, strDataType) & " as " & _
-                                        strDataType
+                                        Get_Variable_Translate_Datatype(strDataType)
 
 End Function
 Public Function Get_Variable_Name_AsString_ByEnum( _
@@ -169,11 +169,8 @@ Public Function Get_Variable_Type_AsString_ByEnum(VariableType As enuCoding_Data
         Case vtLong
             Get_Variable_Type_AsString_ByEnum = "Long"
             
-        Case vtString
+        Case vtString, vtStringLong
             Get_Variable_Type_AsString_ByEnum = "String"
-            
-        Case vtStringLong
-            Get_Variable_Type_AsString_ByEnum = "Long String"
             
         Case vtVariant
             Get_Variable_Type_AsString_ByEnum = "Variant"
@@ -184,6 +181,20 @@ Public Function Get_Variable_Type_AsString_ByEnum(VariableType As enuCoding_Data
     End Select
 
 End Function
+Public Function Get_Variable_Translate_Datatype(strDataType As String) As String
+
+    Select Case strDataType
+        
+        Case "Long String"
+            Get_Variable_Translate_Datatype = "String"
+            
+        Case Else
+            Get_Variable_Translate_Datatype = strDataType
+            
+    End Select
+
+End Function
+
 Public Function Get_Variable_Type_AsEnum_ByString(ByVal strDataType As String) As enuCoding_DataTypes
 'Refactored
 'Returns
@@ -202,11 +213,8 @@ Public Function Get_Variable_Type_AsEnum_ByString(ByVal strDataType As String) A
         Case "Long"
             Get_Variable_Type_AsEnum_ByString = vtLong
             
-        Case "String"
+        Case "String", "Long String"
             Get_Variable_Type_AsEnum_ByString = vtString
-            
-        Case "Long String"
-            Get_Variable_Type_AsEnum_ByString = vtStringLong
             
         Case "Variant"
             Get_Variable_Type_AsEnum_ByString = vtVariant
