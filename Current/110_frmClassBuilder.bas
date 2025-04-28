@@ -146,7 +146,7 @@ Private Sub cmdAddMethod_Click()
 End Sub
 Private Sub cmdCreateClass_Click()
 
-    Dim Class As New clsClass
+    Dim Class As New clsClass_Old
 
     Dim Properties() As Variant
     Dim Methods() As Variant

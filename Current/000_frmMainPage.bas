@@ -10,8 +10,8 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
+Dim Component As New clsComponent_Old
 Dim Log As New clsLog
-Dim Component As New clsComponent
 Dim Coding_Git As New clsCoding_Git
 
 
@@ -40,16 +40,16 @@ Private Sub cmdExportComponents_Click()
 
 End Sub
 
-Private Sub cmdFormPopUpAdd_Click()
-
-    Dim strFormName As String
-    
-    strFormName = InputBox("Bitte geben Sie einen Namen für das Formular ein.")
-    
-    Access_Form_CreateNew strFormName
-    Access_Form_Settings_PopUp strFormName
-
-End Sub
+'Private Sub cmdFormPopUpAdd_Click()
+'
+'    Dim strFormName As String
+'
+'    strFormName = InputBox("Bitte geben Sie einen Namen für das Formular ein.")
+'
+'    Access_Form_CreateNe strFormName
+'    Access_Form_Settings_PopUp strFormName
+'
+'End Sub
 
 Private Sub cmdOpenApplications_Click()
 

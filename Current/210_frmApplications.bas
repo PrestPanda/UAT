@@ -12,6 +12,3 @@ Option Explicit
 
 
 
-Private Sub cmdApplicationAdd_Click()
-
-End Sub

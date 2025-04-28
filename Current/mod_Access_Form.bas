@@ -1,12 +1,16 @@
 Option Compare Database
 Option Explicit
 
-Public Sub Access_Form_Create_Standard(strClassName As String)
+Dim Log As New clsLog
 
-    Access_Form_Create_Add strClassName
+Public Sub Access_Form_Create_Standard(strClassName As String, Properties() As Variant)
+
+    Log.WriteLine "Standardformulare werden erstellt."
+
+    Access_Form_Create_Add strClassName, Properties()
 
 End Sub
-Private Sub Access_Form_Create_Add(strClassName As String)
+Private Sub Access_Form_Create_Add(strClassName As String, Properties() As Variant)
 
     Dim strFormName As String
     
@@ -14,26 +18,24 @@ Private Sub Access_Form_Create_Add(strClassName As String)
 
     Access_Form_CreateNew strFormName
     Access_Form_Settings_PopUp strFormName
+    Access_Control_CreateFromArray strFormName, Translate_Properties_To_Controls(Properties())
+    
+    'Button für das Hinzufügen erstellen
 
 End Sub
+
 
 Private Sub Access_Form_CreateNew(strFormName As String)
 
     Dim objFormNew As Object
     Dim strOldName As String
     
-
-
-    ' Neues Formular erstellen
     Set objFormNew = CreateForm
 
-    ' Erstmal speichern unter dem TEMP-Namen
+    ' Speichern und umbenennen
     DoCmd.Save acForm, objFormNew.Name
     strOldName = objFormNew.Name
-    ' Formular schließen
     DoCmd.Close acForm, objFormNew.Name
-
-    ' Danach erst umbenennen
     Access_RenameForm strOldName, strFormName
 
     Exit Sub
