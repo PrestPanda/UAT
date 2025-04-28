@@ -15,7 +15,8 @@ Private Log As New clsLog
 
 Public Function Get_Code_ClassModule(strClassName As String, _
     Properties() As Variant, _
-    Methods() As Variant) As String
+    Methods() As Variant, _
+    Classes() As Variant) As String
 'Refactored
 
     Dim strCode As String
@@ -26,8 +27,8 @@ Public Function Get_Code_ClassModule(strClassName As String, _
     strTableName = "tbl_" & strClassName
     strClassModuleName = "cls" & strClassName
   
-    
-    strCode = Get_Code_ClassModule_PrivateVariables(Properties()) & vbNewLine
+    strCode = Get_Code_ClassModule_Class_References(Classes()) & vbNewLine
+    strCode = strCode & vbNewLine & Get_Code_ClassModule_PrivateVariables(Properties()) & vbNewLine
     strCode = strCode & vbNewLine & Get_Code_ClassModule_Properties(Properties()) & vbNewLine
     strCode = strCode & vbNewLine & Get_Code_Module_Methods(strTableName, Properties(), Methods()) & vbNewLine
 
@@ -35,6 +36,40 @@ Public Function Get_Code_ClassModule(strClassName As String, _
 
 End Function
 '-------------------------------------------- CODE - Module - PRIVATE VARIABLES -----------------------------------
+Public Function Get_Code_ClassModule_Class_References(Classes() As Variant) As String
+'Refactored
+
+    Dim strCode As String
+    Dim lngCounter As Long
+    
+    Log.WriteLine "Code für Verweise auf Klassen wird generiert."
+    
+    If Array_HasEntries(Classes()) = True Then
+    
+        For lngCounter = LBound(Classes()) To UBound(Classes())
+        
+            If strCode = "" Then
+                strCode = Coding.Get_Class_Reference_DimensionStatement(Classes(lngCounter, 1)) & vbNewLine
+            Else
+            strCode = strCode & Coding.Get_Class_Reference_DimensionStatement(Classes(lngCounter, 1)) & vbNewLine
+        
+            End If
+        
+        Next lngCounter
+    
+    End If
+    
+    strCode = strCode & vbNewLine
+    
+    Log.WriteLine "Code für Verweise auf Klassen wurde generiert."
+    
+    Get_Code_ClassModule_Class_References = strCode
+
+
+End Function
+
+
+
 Public Function Get_Code_ClassModule_PrivateVariables(Properties() As Variant) As String
 'Refactored
 
@@ -322,13 +357,17 @@ End Function
 'End Function
 Public Function Get_Code_Module_Method_Draft_Standard_Exists() As String
 
-    Dim strCode As String
+     Dim strCode As String
 
     strCode = _
-        "If DB_Check = True Then" & vbCrLf & _
-        vbTab & "Exists = True" & vbCrLf & _
-        "Else" & vbCrLf & _
+        "If lngID = 0 Then" & vbCrLf & _
         vbTab & "Exists = False" & vbCrLf & _
+        "Else" & vbCrLf & _
+        vbTab & "If DB_Check = True Then" & vbCrLf & _
+        vbTab & vbTab & "Exists = True" & vbCrLf & _
+        vbTab & "Else" & vbCrLf & _
+        vbTab & vbTab & "Exists = False" & vbCrLf & _
+        vbTab & "End If" & vbCrLf & _
         "End If"
 
     Get_Code_Module_Method_Draft_Standard_Exists = _
@@ -362,14 +401,11 @@ Public Function Get_Code_Module_Method_Draft_Standard_LoadByID() As String
 
     Dim strCode As String
 
-    strCode = _
-        "lngID = CLng(InputBox(""Bitte ID eingeben"", ""Datensatz laden""))" & vbCrLf & _
-        "If lngID > 0 Then" & vbCrLf & _
-        vbTab & "Load" & vbCrLf & _
-        "End If"
+    strCode = "lngID = lngID_2" & vbCrLf & _
+        "Load" & vbCrLf
 
     Get_Code_Module_Method_Draft_Standard_LoadByID = _
-        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "LoadByID", "", strCode, vtNoType)
+        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "LoadByID", "lngID_2 as long", strCode, vtNoType)
 
 End Function
 Public Function Get_Code_Module_Method_Draft_Standard_Save() As String
@@ -422,52 +458,57 @@ End Function
 Public Function Get_Code_Module_Method_Draft_DB_Activate(strTableName As String) As String
 'Refactored
 
-    Get_Code_Module_Method_Draft_DB_Activate = Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Activate", "", _
-                                            Get_Code_Wrap_VBA_SQL_Statement( _
-                                            Coding_SQL.Get_DB_Activate(strTableName)) _
-                                            , vtNoType)
-
+    Get_Code_Module_Method_Draft_DB_Activate = Get_Code_Wrap_VBA_Method(vPrivate, mtSub, "DB_Activate", "", _
+                                            "If DB_Check = true then " & vbNewLine & vbNewLine & _
+                                            vbTab & "blnIsActive = True" & vbNewLine & _
+                                            vbTab & "DB_Update" & vbNewLine & vbNewLine & _
+                                            "End if", vtNoType)
 End Function
 Public Function Get_Code_Module_Method_Draft_DB_Check(strTableName As String) As String
 'Refactored
 
     Dim strCode As String
 
-    strCode = "If Isnull(dlookup(" & """ID""" & ",""" & strTableName & """," & """ID =""" & " & lngID)) = false then" & vbNewLine & _
-        vbTab & "DB_Check = true" & vbNewLine & _
-        "Else" & vbNewLine & _
-        vbTab & "DB_Check = false" & vbNewLine & _
+    strCode = "if lngID = 0 then " & vbNewLine & vbNewLine & _
+        vbTab & "DB_Check = False" & vbNewLine & vbNewLine & _
+        "Else" & vbNewLine & vbNewLine & _
+        vbTab & "If Isnull(dlookup(" & """ID""" & ",""" & strTableName & """," & """ID =""" & " & lngID)) = false then" & vbNewLine & _
+        vbTab & vbTab & "DB_Check = true" & vbNewLine & _
+        vbTab & "Else" & vbNewLine & _
+        vbTab & vbTab & "DB_Check = false" & vbNewLine & _
+        vbTab & "End If" & vbNewLine & vbNewLine & _
         "End If"
 
     Get_Code_Module_Method_Draft_DB_Check = _
-        Get_Code_Wrap_VBA_Method(vPublic, mtFunction, "DB_Check", "", strCode, vtBoolean)
+        Get_Code_Wrap_VBA_Method(vPrivate, mtFunction, "DB_Check", "", strCode, vtBoolean)
 
 End Function
 Public Function Get_Code_Module_Method_Draft_DB_Deactivate(strTableName As String) As String
 'Refactored
 
-    Get_Code_Module_Method_Draft_DB_Deactivate = _
-        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Deactivate", "", _
-            Get_Code_Wrap_VBA_SQL_Statement( _
-            Coding_SQL.Get_DB_Deactivate(strTableName)) _
-            , vtNoType)
+    Get_Code_Module_Method_Draft_DB_Deactivate = Get_Code_Wrap_VBA_Method(vPrivate, mtSub, "DB_Deactivate", "", _
+                                            "If DB_Check = true then " & vbNewLine & vbNewLine & _
+                                            vbTab & "blnIsActive = False" & vbNewLine & _
+                                            vbTab & "DB_Update" & vbNewLine & vbNewLine & _
+                                            "End if", vtNoType)
 
 
 End Function
 Public Function Get_Code_Module_Method_Draft_DB_Delete(strTableName As String) As String
 'Refactored
 
-    Get_Code_Module_Method_Draft_DB_Delete = Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Delete", "", _
+    Get_Code_Module_Method_Draft_DB_Delete = Get_Code_Wrap_VBA_Method(vPrivate, mtSub, "DB_Delete", "", _
                                         Get_Code_Wrap_VBA_SQL_Statement( _
-                                        Coding_SQL.Get_DB_Delete(strTableName)) _
-                                        , vtNoType)
+                                        Coding_SQL.Get_DB_Delete(strTableName)) & vbNewLine & vbNewLine & _
+                                        "Reset", vtNoType)
 
 
 End Function
 Public Function Get_Code_Module_Method_Draft_DB_Insert(strTableName As String, Properties() As Variant) As String
 'Refactored
 
-    Get_Code_Module_Method_Draft_DB_Insert = Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Insert", "", _
+    Get_Code_Module_Method_Draft_DB_Insert = Get_Code_Wrap_VBA_Method(vPrivate, mtSub, "DB_Insert", "", _
+                                        Get_Code_Module_Method_Draft_DB_Insert_SetValues(strTableName, Properties()) & vbNewLine & _
                                         Get_Code_Wrap_VBA_SQL_Statement( _
                                         Coding_SQL.Get_DB_Insert(strTableName, _
                                         Properties())) & _
@@ -475,12 +516,58 @@ Public Function Get_Code_Module_Method_Draft_DB_Insert(strTableName As String, P
                                         , vtNoType)
 
 End Function
+'Public Function Get_Code_Module_Method_DB_Insert_GetID(strTableName As String) As String
+''Refactored
+''Scheinbar nicht mehr nötig wegen Get_Code_Module_Method_Draft_DB_Insert_SetValues
+'
+'    Get_Code_Module_Method_DB_Insert_GetID = vbNewLine & vbNewLine & _
+'                                        "lngID = DMax(""" & "ID""" & ", """ & strTableName & """) + 1" & _
+'                                        vbNewLine
+'
+'End Function
 Public Function Get_Code_Module_Method_DB_Insert_UpdateID(strTableName As String) As String
 'Refactored
 
     Get_Code_Module_Method_DB_Insert_UpdateID = vbNewLine & vbNewLine & _
                                         "lngID = DMax(""" & "ID""" & ", """ & strTableName & """)" & _
                                         vbNewLine
+
+End Function
+Public Function Get_Code_Module_Method_Draft_DB_Insert_SetValues(strTableName As String, _
+    Properties() As Variant) As String
+'New
+
+    Dim lngCounter As Long
+    Dim strCode As String
+
+    For lngCounter = LBound(Properties()) To UBound(Properties())
+    
+        Select Case Properties(lngCounter, 1)
+        
+            Case "ID"
+                strCode = "If IsNull(DMax(" & """ID""" & ", """ & strTableName & """)) = False then " & vbNewLine & _
+                    vbTab & "lngID = DMax(" & """ID""" & ", """ & strTableName & """) + 1" & vbNewLine & _
+                     "End if" & vbNewLine & vbNewLine
+
+        
+            Case "CreateTS", "LastUpdateTS"
+                strCode = strCode & Coding.Get_Variable_Name_AsString_ByString( _
+                    Properties(lngCounter, 1), _
+                    Properties(lngCounter, 2)) & _
+                    " = now()" & vbNewLine
+                
+            Case "IsActive"
+                strCode = strCode & Coding.Get_Variable_Name_AsString_ByString( _
+                    Properties(lngCounter, 1), _
+                    Properties(lngCounter, 2)) & _
+                    " = True " & vbNewLine
+                    
+        End Select
+    
+    
+    Next lngCounter
+    
+    Get_Code_Module_Method_Draft_DB_Insert_SetValues = strCode
 
 End Function
 Public Function Get_Code_Module_Method_Draft_DB_Load(strTableName As String, Properties() As Variant) As String
@@ -491,10 +578,12 @@ Public Function Get_Code_Module_Method_Draft_DB_Load(strTableName As String, Pro
     Dim strVarName As String
 
     strCode = "Dim rs As DAO.Recordset" & vbCrLf
-    strCode = strCode & "Dim strSQL As String" & vbCrLf
-    strCode = strCode & "strSQL = ""SELECT * FROM " & strTableName & " WHERE ID = "" & lngID" & vbCrLf
-    strCode = strCode & "Set rs = CurrentDb.OpenRecordset(strSQL, dbOpenDynaset)" & vbCrLf
-    strCode = strCode & "If Not rs.EOF Then" & vbCrLf
+    strCode = strCode & "Dim strSQL As String" & vbCrLf & vbCrLf
+    strCode = strCode & "if db_check = true then " & vbNewLine & vbNewLine
+    strCode = strCode & vbTab & "strSQL = ""SELECT * FROM " & strTableName & " WHERE ID = "" & lngID" & vbCrLf & vbCrLf
+    strCode = strCode & vbTab & "Reset" & vbCrLf & vbCrLf
+    strCode = strCode & vbTab & "Set rs = CurrentDb.OpenRecordset(strSQL, dbOpenDynaset)" & vbCrLf & vbCrLf
+    strCode = strCode & vbTab & "If Not rs.EOF Then" & vbCrLf
 
     For lngCounter = LBound(Properties()) To UBound(Properties())
     
@@ -502,29 +591,56 @@ Public Function Get_Code_Module_Method_Draft_DB_Load(strTableName As String, Pro
             Properties(lngCounter, 1), _
             Properties(lngCounter, 2))
             
-        strCode = strCode & "    " & strVarName & " = rs![" & Properties(lngCounter, 1) & "]" & vbCrLf
+        strCode = strCode & vbTab & "    " & strVarName & " = rs![" & Properties(lngCounter, 1) & "]" & vbCrLf
         
     Next lngCounter
 
-    strCode = strCode & "End If" & vbCrLf
-    strCode = strCode & "rs.Close" & vbCrLf
-    strCode = strCode & "Set rs = Nothing" & vbCrLf
+    strCode = strCode & vbTab & "End If" & vbCrLf & vbCrLf
+    strCode = strCode & vbTab & "rs.Close" & vbCrLf
+    strCode = strCode & vbTab & "Set rs = Nothing" & vbCrLf & vbCrLf
+    strCode = strCode & "end if" & vbCrLf
 
 
      Get_Code_Module_Method_Draft_DB_Load = _
-        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Load", "", strCode, vtNoType)
+        Get_Code_Wrap_VBA_Method(vPrivate, mtSub, "DB_Load", "", strCode, vtNoType)
 
 
 End Function
 Public Function Get_Code_Module_Method_Draft_DB_Update(strTableName As String, Properties() As Variant) As String
 'Refactored
+Dim strCode As String
 
-    Get_Code_Module_Method_Draft_DB_Update = _
-        Get_Code_Wrap_VBA_Method(vPublic, mtSub, "DB_Update", "", _
+    strCode = Get_Code_Module_Method_Draft_DB_Update_SetValues(Properties()) & vbNewLine & _
         Get_Code_Wrap_VBA_SQL_Statement( _
-        Coding_SQL.Get_DB_Update(strTableName, Properties())) _
-            , vtNoType)
+        Coding_SQL.Get_DB_Update(strTableName, Properties()))
+        
+    Get_Code_Module_Method_Draft_DB_Update = _
+        Get_Code_Wrap_VBA_Method(vPrivate, mtSub, "DB_Update", "", strCode, vtNoType)
 
+
+End Function
+Public Function Get_Code_Module_Method_Draft_DB_Update_SetValues(Properties() As Variant) As String
+'New
+
+    Dim lngCounter As Long
+    Dim strCode As String
+
+    For lngCounter = LBound(Properties()) To UBound(Properties())
+    
+        Select Case Properties(lngCounter, 1)
+        
+            Case "LastUpdateTS"
+                strCode = strCode & Coding.Get_Variable_Name_AsString_ByString( _
+                    Properties(lngCounter, 1), _
+                    Properties(lngCounter, 2)) & _
+                    " = now()" & vbNewLine
+                    
+        End Select
+    
+    
+    Next lngCounter
+    
+    Get_Code_Module_Method_Draft_DB_Update_SetValues = strCode
 
 End Function
 '--------------------------------------------Code Wrap -----------------------------------

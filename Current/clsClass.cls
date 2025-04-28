@@ -11,16 +11,35 @@ Dim Coding_VBA As New clsCoding_VBA
 
 
 
-Public Sub Build(strClassName As String, Properties() As Variant, Methods() As Variant)
+Public Sub Build(strClassName As String, _
+    Properties() As Variant, _
+    Methods() As Variant, _
+    Classes() As Variant)
 
     Dim strVBACode As String
+    
+    If Access_Table_Exists("tbl_" & strClassName) = True Then
+    
+        MsgBox "Es existiert bereits eine Tabelle mit dem Namen." & vbNewLine & _
+            "Bitte löschen Sie die Tabelle oder ändern den Namen der Klasse. "
+        End
+        
+    End If
+    
+    If Access_Class_Module_Exists("cls" & strClassName) = True Then
+    
+        MsgBox "Es existiert bereits ein Klassenmodul mit dem Namen." & vbNewLine & _
+            "Bitte löschen Sie die Tabelle oder ändern den Namen der Klasse. "
+        End
+        
+    End If
     
 
     Log.WriteLine "Generierung der Klasse gestartet"
     
     
     'Create VBA Code
-    strVBACode = Coding_VBA.Get_Code_ClassModule(strClassName, Properties(), Methods())
+    strVBACode = Coding_VBA.Get_Code_ClassModule(strClassName, Properties(), Methods(), Classes())
     ClassModule_CreateNew "cls" & strClassName, strVBACode
    
      

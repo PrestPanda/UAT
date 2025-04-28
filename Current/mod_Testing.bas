@@ -8,15 +8,14 @@ Private Sub Testing_Created_Class_clsUser()
 
     With User
         .Name = "Jan Christeleit"
-        .IsActive = True
-        .CreateUser_FK = 1
-        .CreateTS = Now()
         .Save
         .Reset
         .Name = "Marcel Kruse"
-        .IsActive = True
-        .CreateUser_FK = 1
         .Save
+        .Name = "Marcel Duse"
+        .Save
+        .Delete
+        .LoadByID 1
     End With
     
     User1.ID = 1

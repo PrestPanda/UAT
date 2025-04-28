@@ -150,11 +150,13 @@ Private Sub cmdCreateClass_Click()
 
     Dim Properties() As Variant
     Dim Methods() As Variant
+    Dim Classes() As Variant
     
     Properties = Access_ListBox_Get_Array(Me.Name, "lstPreviewProperties")
     Methods = Access_ListBox_Get_Array(Me.Name, "lstPreviewMethods")
+    Classes = Access_ListBox_Get_Array(Me.Name, "lstPackage_Class_Required")
     
-    Class.Build Me.txtClassName.Value, Properties(), Methods()
+    Class.Build Me.txtClassName.Value, Properties(), Methods(), Classes()
     
 
 
@@ -201,10 +203,12 @@ End Sub
 Private Sub lstPackages_AfterUpdate()
 
     Dim Packages As Variant
+    Dim lngCurrentPackage_ID As Long
     Dim strCurrentPackage_Name As String
     Dim blnCurrentPackage_Selected As Boolean
 
     Dim lngCounter_Packages As Long
+    Dim rcsPackage_Class_Required As Recordset
     Dim rcsPackage_Properties As Recordset
     Dim rcsPackage_Methods As Recordset
     
@@ -216,12 +220,49 @@ Private Sub lstPackages_AfterUpdate()
         For lngCounter_Packages = LBound(Packages) To UBound(Packages)
         
             strCurrentPackage_Name = Packages(lngCounter_Packages, 1)
+            lngCurrentPackage_ID = DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & strCurrentPackage_Name & "'")
             blnCurrentPackage_Selected = Access_ListBox_IsValueSelected(Me.Name, "lstPackages", 0, strCurrentPackage_Name)
             
+            'To-Do: Abhängigkeiten zu anderen Classen
+            Set rcsPackage_Class_Required = CurrentDb.OpenRecordset( _
+                "SELECT * FROM 110_tblClassBuilder_Package_Class_Required " & _
+                "WHERE Package_FK = " & lngCurrentPackage_ID)
+                
+            If rcsPackage_Class_Required.RecordCount > 0 Then
+            
+                rcsPackage_Class_Required.MoveFirst
+                
+                Do
+                
+                    If blnCurrentPackage_Selected = True Then
+                    
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPackage_Class_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = False Then
+                            'Eintrag hinzufügen
+                            lstPackage_Class_Required.AddItem rcsPackage_Class_Required.Fields("ClassName").Value
+                        End If
+                        
+                    Else
+                    
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPackage_Class_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = True Then
+                            'Eintrag löschen
+                            Access_ListBox_RemoveValue Me.Name, "lstPackage_Class_Required", rcsPackage_Class_Required.Fields("ClassName").Value
+                        End If
+                    
+                    End If
+                    
+                    
+                    rcsPackage_Class_Required.MoveNext
+                    
+                Loop While rcsPackage_Class_Required.EOF = False
+            
+            End If
+
+
+            
             'Eigenschaften des Pakets
-            Set rcsPackage_Properties = CurrentDb.OpenRecordset("SELECT * FROM 110_tblClassBuilder_Property_Draft " & _
-                "WHERE Package_FK = " & _
-                DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & strCurrentPackage_Name & "'"))
+            Set rcsPackage_Properties = CurrentDb.OpenRecordset( _
+                "SELECT * FROM 110_tblClassBuilder_Property_Draft " & _
+                "WHERE Package_FK = " & lngCurrentPackage_ID)
                 
             If rcsPackage_Properties.RecordCount > 0 Then
             

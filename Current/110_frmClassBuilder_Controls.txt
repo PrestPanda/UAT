@@ -10,6 +10,7 @@ Name: EmptyCell188	Typ: EmptyCell
 Name: EmptyCell316	Typ: EmptyCell
 Name: EmptyCell287	Typ: EmptyCell
 Name: EmptyCell231	Typ: EmptyCell
+Name: EmptyCell411	Typ: EmptyCell
 Name: Bezeichnungsfeld3	Typ: Label
 Name: txtClassName	Typ: TextBox
 Name: Bezeichnungsfeld19	Typ: Label
@@ -28,6 +29,7 @@ Name: EmptyCell379	Typ: EmptyCell
 Name: EmptyCell380	Typ: EmptyCell
 Name: EmptyCell381	Typ: EmptyCell
 Name: EmptyCell382	Typ: EmptyCell
+Name: EmptyCell413	Typ: EmptyCell
 Name: EmptyCell84	Typ: EmptyCell
 Name: EmptyCell402	Typ: EmptyCell
 Name: EmptyCell403	Typ: EmptyCell
@@ -37,6 +39,7 @@ Name: cmdPreviewProperty_MoveUp	Typ: CommandButton
 Name: EmptyCell318	Typ: EmptyCell
 Name: lstPreviewMethods	Typ: ListBox
 Name: cmdPreviewMethod_MoveUp	Typ: CommandButton
+Name: lstPackage_Class_Required	Typ: ListBox
 Name: EmptyCell44	Typ: EmptyCell
 Name: EmptyCell46	Typ: EmptyCell
 Name: EmptyCell19	Typ: EmptyCell
@@ -135,5 +138,7 @@ Name: EmptyCell205	Typ: EmptyCell
 Name: EmptyCell335	Typ: EmptyCell
 Name: EmptyCell270	Typ: EmptyCell
 Name: EmptyCell250	Typ: EmptyCell
+Name: EmptyCell433	Typ: EmptyCell
 Name: cmdCreateClass	Typ: CommandButton
+Name: Bezeichnungsfeld458	Typ: Label
 Name: pagDraft	Typ: Page

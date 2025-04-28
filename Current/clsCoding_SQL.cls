@@ -5,7 +5,6 @@ Attribute VB_Exposed = False
 Option Compare Database
 
 Dim Coding As New clsCoding
-Dim Coding_SQL As New clsCoding_SQL
 
 Public Enum enuCoding_SQL_DataTypes
     
@@ -148,7 +147,7 @@ Public Function Get_DB_Delete(strTableName As String) As String
 
 End Function
 Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) As String
-'In Refactoring
+'Refactored
 'Generates VBA Code for Inserting a dataset into an object
 'Zunächst sollen nur die privaten Variablen für das auslesen der Werte genutzt werden
 'Mit Einbau der Enumerations soll dies angepasst werden, dass je nach Fall
@@ -163,38 +162,41 @@ Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) A
 
         strColumns = strColumns & Properties(lngCounter, 1) & ", "
 
-        If Properties(lngCounter, 1) = "ID" Then
 
-            If strValues = "" Then
-                strValues = """ & " & " lngID & " & """, "
-            Else
-                strValues = strValues & " & lngID & """ & ", "
-            End If
-
-        Else
+        Select Case Properties(lngCounter, 1)
         
-           If strValues = "" Then
-           
-                strValues = """" & _
-                    Get_Code_Variable_AsString_ByString( _
-                    Coding.Get_Variable_Name_AsString_ByString( _
-                        Properties(lngCounter, 1), _
-                        Properties(lngCounter, 2)), _
-                    Properties(lngCounter, 2)) & ", "
-                
-            Else
+            Case "ID"
             
-                strValues = strValues & _
-                    Get_Code_Variable_AsString_ByString( _
-                    Coding.Get_Variable_Name_AsString_ByString( _
-                        Properties(lngCounter, 1), _
-                        Properties(lngCounter, 2)), _
-                    Properties(lngCounter, 2)) & ", "
+                If strValues = "" Then
+                    strValues = """ & " & " lngID & " & """, "
+                Else
+                    strValues = strValues & """ &  lngID & " & """, "
+                End If
+                
+
+            Case Else
+            
+                If strValues = "" Then
+           
+                    strValues = Get_Code_Variable_AsString_ByString( _
+                        Coding.Get_Variable_Name_AsString_ByString( _
+                            Properties(lngCounter, 1), _
+                            Properties(lngCounter, 2)), _
+                        Properties(lngCounter, 2)) & ", "
                     
-            End If
-
-
-        End If
+                Else
+                
+                    strValues = strValues & _
+                        Get_Code_Variable_AsString_ByString( _
+                        Coding.Get_Variable_Name_AsString_ByString( _
+                            Properties(lngCounter, 1), _
+                            Properties(lngCounter, 2)), _
+                        Properties(lngCounter, 2)) & ", "
+                        
+                End If
+        
+        
+        End Select
 
     Next lngCounter
 
@@ -207,9 +209,6 @@ Public Function Get_DB_Insert(strTableName As String, Properties() As Variant) A
                 vbTab & """VALUES (" & strValues & ")"""
 
     Get_DB_Insert = strCode
-
-
-
 
     
 End Function
@@ -228,29 +227,38 @@ Public Function Get_DB_Update(strTableName As String, Properties() As Variant) A
 
     For lngCounter = LBound(Properties()) To UBound(Properties())
     
-        If Properties(lngCounter, 1) <> "ID" Then
+    
+        Select Case Properties(lngCounter, 1)
         
-            If strUpdates = "" Then
+            Case "ID"
+            'Nichts tun
             
-                strUpdates = Properties(lngCounter, 1) & " = " & _
-                    Get_Code_Variable_AsString_ByString( _
-                        Coding.Get_Variable_Name_AsString_ByString( _
-                            Properties(lngCounter, 1), _
-                            Properties(lngCounter, 2)), _
-                        Properties(lngCounter, 2)) & ", "
+
+            Case Else
             
-            Else
             
-                strUpdates = strUpdates & Properties(lngCounter, 1) & " = " & _
-                    Get_Code_Variable_AsString_ByString( _
-                        Coding.Get_Variable_Name_AsString_ByString( _
-                            Properties(lngCounter, 1), _
-                            Properties(lngCounter, 2)), _
-                        Properties(lngCounter, 2)) & ", "
+                If strUpdates = "" Then
+            
+                    strUpdates = Properties(lngCounter, 1) & " = " & _
+                        Get_Code_Variable_AsString_ByString( _
+                            Coding.Get_Variable_Name_AsString_ByString( _
+                                Properties(lngCounter, 1), _
+                                Properties(lngCounter, 2)), _
+                            Properties(lngCounter, 2)) & ", "
+                
+                Else
+                
+                    strUpdates = strUpdates & Properties(lngCounter, 1) & " = " & _
+                        Get_Code_Variable_AsString_ByString( _
+                            Coding.Get_Variable_Name_AsString_ByString( _
+                                Properties(lngCounter, 1), _
+                                Properties(lngCounter, 2)), _
+                            Properties(lngCounter, 2)) & ", "
+            
+                End If
+                        
         
-            End If
-            
-        End If
+        End Select
         
     Next lngCounter
 
@@ -329,9 +337,10 @@ Public Function Get_Code_Variable_AsString_ByString(ByVal strVariableName As Str
     ByVal strDataType As String) As String
 'Refactored
     ' Erkennt den Datentyp und erzeugt VBA-Code für SQL-Insertion
-    
+
+        
     Select Case Coding.Get_Variable_Type_AsEnum_ByString(strDataType)
-    
+
         Case vtString, vtStringLong
             Get_Code_Variable_AsString_ByString = "'"" & " & strVariableName & " & ""'"
             
@@ -339,7 +348,7 @@ Public Function Get_Code_Variable_AsString_ByString(ByVal strVariableName As Str
             Get_Code_Variable_AsString_ByString = """ & " & strVariableName & " & """
             
         Case vtDate
-            Get_Code_Variable_AsString_ByString = """ & Get_CDate_ByDate_AsString(" & strVariableName & ") & """
+            Get_Code_Variable_AsString_ByString = """ & Coding_SQL.Get_CDate_ByDate_AsString(" & strVariableName & ") & """
             
         Case vtBoolean
             Get_Code_Variable_AsString_ByString = """ & CInt(" & strVariableName & ") & """
@@ -349,4 +358,5 @@ Public Function Get_Code_Variable_AsString_ByString(ByVal strVariableName As Str
             
     End Select
     
+
 End Function
