@@ -357,3 +357,120 @@ Public Function Access_ListBox_IsValueSelected( _
     Access_ListBox_IsValueSelected = False
 
 End Function
+Public Sub Access_Listbox_DeleteSelectedItem(strFormName As String, strControlName As String)
+
+    ' Löscht das aktuell ausgewählte Element aus einer Listbox anhand des übergebenen Formular- und Steuerungsnamens
+
+    Dim frmTarget As Form
+    Dim ctlListbox As Control
+    Dim varSelectedValue As Variant
+    Dim strRowSource As String
+    Dim strNewRowSource As String
+    Dim varItem As Variant
+
+    Set frmTarget = Forms(strFormName)
+    Set ctlListbox = frmTarget.Controls(strControlName)
+    
+    If ctlListbox.ItemsSelected.Count = 0 Then
+        MsgBox "Bitte wählen Sie zuerst einen Eintrag aus.", vbExclamation
+        Exit Sub
+    End If
+    
+    varSelectedValue = ctlListbox.ItemData(ctlListbox.ItemsSelected(0))
+    strRowSource = ctlListbox.RowSource
+    strNewRowSource = ""
+
+    For Each varItem In Split(strRowSource, ";")
+        If Trim(varItem) <> Trim(varSelectedValue) Then
+            If strNewRowSource <> "" Then
+                strNewRowSource = strNewRowSource & ";"
+            End If
+            strNewRowSource = strNewRowSource & varItem
+        End If
+    Next varItem
+
+    ctlListbox.RowSource = strNewRowSource
+
+    
+End Sub
+Public Sub Access_ListBox_MoveItem(strFormName As String, _
+    strControlName As String, _
+    enuDirection As enuDirection)
+
+    ' Verschiebt die markierte Zeile in einer mehrspaltigen Access-ListBox (Value List) um eine Position.
+    ' Unterstützt beliebig viele Spalten – funktioniert nur mit RowSourceType = "Value List".
+    
+    Dim frmTarget As Form
+    Dim objListBox As ListBox
+    Dim intCols As Integer
+    Dim intRows As Integer
+    Dim intIndex As Integer
+    Dim varData() As Variant
+    Dim i As Long, j As Long
+    Dim strRowSource As String
+    Dim varTemp() As String
+
+    Set frmTarget = Forms(strFormName)
+    Set objListBox = frmTarget.Controls(strControlName)
+
+    If objListBox.RowSourceType <> "Value List" Then
+        MsgBox "Diese Funktion unterstützt nur ListBoxen mit RowSourceType = 'Value List'", vbExclamation
+        Exit Sub
+    End If
+
+    intCols = objListBox.ColumnCount
+    intRows = objListBox.ListCount
+
+    intIndex = -1
+    For i = 0 To intRows - 1
+        If objListBox.Selected(i) Then
+            intIndex = i
+            Exit For
+        End If
+    Next i
+
+    If intIndex = -1 Then Exit Sub
+    If enuDirection = Up And intIndex = 0 Then Exit Sub
+    If enuDirection = Down And intIndex = intRows - 1 Then Exit Sub
+
+    ReDim varData(0 To intRows - 1, 0 To intCols - 1)
+    For i = 0 To intRows - 1
+        For j = 0 To intCols - 1
+            varData(i, j) = objListBox.Column(j, i)
+        Next j
+    Next i
+
+    Dim rowA As Long, rowB As Long
+    If enuDirection = Up Then
+        rowA = intIndex
+        rowB = intIndex - 1
+    Else
+        rowA = intIndex
+        rowB = intIndex + 1
+    End If
+
+    Dim temp As Variant
+    For j = 0 To intCols - 1
+        temp = varData(rowA, j)
+        varData(rowA, j) = varData(rowB, j)
+        varData(rowB, j) = temp
+    Next j
+
+    strRowSource = ""
+    For i = 0 To intRows - 1
+        ReDim varTemp(0 To intCols - 1)
+        For j = 0 To intCols - 1
+            varTemp(j) = Nz(varData(i, j), "")
+        Next j
+        strRowSource = strRowSource & Join(varTemp, ";") & ";"
+    Next i
+
+    If Right(strRowSource, 1) = ";" Then
+        strRowSource = Left(strRowSource, Len(strRowSource) - 1)
+    End If
+
+    objListBox.RowSource = strRowSource
+    objListBox.Selected(rowB) = True
+
+    
+End Sub

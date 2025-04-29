@@ -20,103 +20,19 @@ Dim Log As New clsLog
 Dim arrSelectedPackages As String
 
 
-Private Sub cmdClass_Create_Click()
 
-    Dim Class As New clsClass_Old
 
-    Dim Properties() As Variant
-    Dim Methods() As Variant
-    Dim Classes() As Variant
-    
-    Properties = Access_ListBox_Get_Array(Me.Name, "lstPreviewProperties")
-    Methods = Access_ListBox_Get_Array(Me.Name, "lstPreviewMethods")
-    Classes = Access_ListBox_Get_Array(Me.Name, "lstPackage_Class_Required")
-    
-    Class.Build Me.txtClassName.Value, Properties(), Methods(), Classes()
-    
-End Sub
 
-Private Sub cmdRequiredClass_Add_Click()
 
-    'To-Do:
-    'Prüfen, ob die Klasse bereits der Listbox hinzugefügt wurde
-    'Wenn nicht: In die Listbox einfügen, Textbox leeren und Focus auf Textbox
+
+
+
+
+Private Sub cmdReset_Click()
+
+    ApplyDefaultSettings
 
 End Sub
-
-Private Sub cmdMethod_Add_Click()
-
-
-    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
-    
-        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
-            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
-                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
-            Exit Sub
-        End If
-     
-        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.Value) = False Then
-
-            lstPreviewProperties.AddItem txtAddPropertyName.Value & ";" & _
-                cmbAddPropertyType.Column(1)
-                
-            txtAddPropertyName.Value = ""
-            cmbAddPropertyType.Value = ""
-            
-            txtAddPropertyName.SetFocus
-            
-        Else
-        
-            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
-        
-        End If
-        
-    Else
-        
-        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
-        
-    End If
-
-End Sub
-
-Private Sub cmdProperty_Add_Click()
-    
-    'To-Do: Anpassen, so, dass auch die Daten für einen Fremdschlüssel abgefragt werden
-    
-    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
-    
-        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
-            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
-                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
-            Exit Sub
-        End If
-     
-        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.Value) = False Then
-
-            lstPreviewProperties.AddItem txtAddPropertyName.Value & ";" & _
-                cmbAddPropertyType.Column(1)
-                
-            txtAddPropertyName.Value = ""
-            cmbAddPropertyType.Value = ""
-            
-            txtAddPropertyName.SetFocus
-            
-        Else
-        
-            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
-        
-        End If
-        
-    Else
-        
-        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
-        
-    End If
-
-End Sub
-
-
-
 
 Private Sub Form_Load()
 
@@ -126,10 +42,11 @@ Private Sub Form_Load()
     pagClassData.SetFocus
     Load_Packages
     ApplyDefaultSettings
+    UpdateForeignKeyActivation
 
     
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewProperties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewMethods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
     
 
 End Sub
@@ -138,25 +55,12 @@ Private Sub Form_Close()
     Log.WriteLine "Class Builder geschlossen."
 
 End Sub
-Private Sub ApplyDefaultSettings()
+Private Sub txtClassName_AfterUpdate()
 
-    txtAddPropertyName = ""
-    txtAddMethodName = ""
-    txtClassName = ""
-    
-    optMethodAddTypeSub = False
-    optMethodAddTypeFunction = False
-    optMethodAddPrivate = False
-    optMethodAddPublic = False
-    
-    lstPreviewProperties.ColumnCount = 2
-    lstPreviewMethods.ColumnCount = 3
-    lstPackages.ColumnCount = 1
-    
-    Access_ListBox_Clear Me.Name, "lstPreviewMethods"
-    Access_ListBox_Clear Me.Name, "lstPreviewProperties"
+    txtClassTableName = txtClassName
     
 End Sub
+'---------------------------------------------------------- PACKAGES ---------------------------------------------
 Private Sub Load_Packages()
 
       Dim intRow As Long
@@ -166,7 +70,7 @@ Private Sub Load_Packages()
     Dim varRow() As Variant
     Dim varData() As Variant
 
-    lstPackages.RowSource = ""
+    lstPreview_Packages.RowSource = ""
     
     varData = Get_Array_FromQuery("110_qryClassBuilder_Package_SORT")
 
@@ -180,7 +84,7 @@ Private Sub Load_Packages()
         For intCol = 1 To intCols
             varRow(intCol - 1) = varData(intRow, intCol)
         Next intCol
-        lstPackages.AddItem varRow(0)
+        lstPreview_Packages.AddItem varRow(0)
         For intCol = 1 To intCols - 1
 '            lstPackages.List(lstPackages.ListCount - 1, intCol) = varRow(intCol)
         Next intCol
@@ -192,11 +96,11 @@ ExitSub:
     On Error Resume Next
 '    lstPackages.Clear
     For intRow = LBound(varData) To UBound(varData)
-        lstPackages.AddItem varData(intRow)
+        lstPreview_Packages.AddItem varData(intRow)
     Next intRow
 
 End Sub
-Private Sub lstPackages_AfterUpdate()
+Private Sub lstPreview_Packages_AfterUpdate()
 
     Dim Packages As Variant
     Dim lngCurrentPackage_ID As Long
@@ -208,7 +112,7 @@ Private Sub lstPackages_AfterUpdate()
     Dim rcsPackage_Properties As Recordset
     Dim rcsPackage_Methods As Recordset
     
-    Packages = Access_ListBox_Get_Array(Me.Name, "lstPackages")
+    Packages = Access_ListBox_Get_Array(Me.Name, "lstPreview_Packages")
 
 
     If Not IsEmpty(Packages) Then
@@ -217,7 +121,7 @@ Private Sub lstPackages_AfterUpdate()
         
             strCurrentPackage_Name = Packages(lngCounter_Packages, 1)
             lngCurrentPackage_ID = DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & strCurrentPackage_Name & "'")
-            blnCurrentPackage_Selected = Access_ListBox_IsValueSelected(Me.Name, "lstPackages", 0, strCurrentPackage_Name)
+            blnCurrentPackage_Selected = Access_ListBox_IsValueSelected(Me.Name, "lstPreview_Packages", 0, strCurrentPackage_Name)
             
             'To-Do: Abhängigkeiten zu anderen Classen
             Set rcsPackage_Class_Required = CurrentDb.OpenRecordset( _
@@ -232,16 +136,16 @@ Private Sub lstPackages_AfterUpdate()
                 
                     If blnCurrentPackage_Selected = True Then
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPackage_Class_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = False Then
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = False Then
                             'Eintrag hinzufügen
-                            lstPackage_Class_Required.AddItem rcsPackage_Class_Required.Fields("ClassName").Value
+                            lstPreviewClass_Required.AddItem rcsPackage_Class_Required.Fields("ClassName").Value
                         End If
                         
                     Else
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPackage_Class_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = True Then
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = True Then
                             'Eintrag löschen
-                            Access_ListBox_RemoveValue Me.Name, "lstPackage_Class_Required", rcsPackage_Class_Required.Fields("ClassName").Value
+                            Access_ListBox_RemoveValue Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("ClassName").Value
                         End If
                     
                     End If
@@ -268,17 +172,17 @@ Private Sub lstPackages_AfterUpdate()
                 
                     If blnCurrentPackage_Selected = True Then
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewProperties", rcsPackage_Properties.Fields("Name").Value) = False Then
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreview_Properties", rcsPackage_Properties.Fields("Name").Value) = False Then
                             'Eintrag hinzufügen
-                            lstPreviewProperties.AddItem rcsPackage_Properties.Fields("Name").Value & ";" & _
+                            lstPreview_Properties.AddItem rcsPackage_Properties.Fields("Name").Value & ";" & _
                                 DLookup("name", "110_tblClassBuilder_Property_Type", "ID = " & rcsPackage_Properties.Fields("Type_FK").Value)
                         End If
                         
                     Else
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewProperties", rcsPackage_Properties.Fields("Name").Value) = True Then
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreview_Properties", rcsPackage_Properties.Fields("Name").Value) = True Then
                             'Eintrag löschen
-                            Access_ListBox_RemoveValue Me.Name, "lstPreviewProperties", rcsPackage_Properties.Fields("Name").Value
+                            Access_ListBox_RemoveValue Me.Name, "lstPreview_Properties", rcsPackage_Properties.Fields("Name").Value
                         End If
                     
                     End If
@@ -305,17 +209,17 @@ Private Sub lstPackages_AfterUpdate()
                 
                     If blnCurrentPackage_Selected = True Then
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").Value) = False Then
-                            lstPreviewMethods.AddItem rcsPackage_Methods.Fields("Name").Value & ";" & _
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreview_Methods", rcsPackage_Methods.Fields("Name").Value) = False Then
+                            lstPreview_Methods.AddItem rcsPackage_Methods.Fields("Name").Value & ";" & _
                                 DLookup("name", "110_tblClassBuilder_Visability", "ID = " & rcsPackage_Methods.Fields("Visability_FK").Value) & ";" & _
                                 DLookup("name", "110_tblClassBuilder_Method_Type", "ID = " & rcsPackage_Methods.Fields("Type_FK").Value)
                         End If
                         
                     Else
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").Value) = True Then
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreview_Methods", rcsPackage_Methods.Fields("Name").Value) = True Then
                             'Eintrag löschen
-                            Access_ListBox_RemoveValue Me.Name, "lstPreviewMethods", rcsPackage_Methods.Fields("Name").Value
+                            Access_ListBox_RemoveValue Me.Name, "lstPreview_Methods", rcsPackage_Methods.Fields("Name").Value
                         End If
                     
                     End If
@@ -332,33 +236,224 @@ Private Sub lstPackages_AfterUpdate()
     End If
     
 End Sub
-Private Sub cmdPreviewMethod_MoveDown_Click()
-    ListBox_Item_Move lstPreviewMethods, Down
+'---------------------------------------------------------- REQUIRED CLASS ---------------------------------------------
+Private Sub cmdRequiredClass_Add_Click()
+
+    If Access_ListBox_ContainsValue(Me.Name, "lstClass_Required", cmbClassRequired_Add.Value) = False Then
+                    
+        lstPreviewClass_Required.AddItem cmbClassRequired_Add.Value
+        cmbClassRequired_Add.Value = ""
+        cmbClassRequired_Add.SetFocus
+    
+    Else
+    
+        MsgBox "Die Klasse wurde bereits hinzugefügt."
+        End
+    
+    End If
+
 End Sub
-Private Sub cmdPreviewMethod_MoveUp_Click()
-    ListBox_Item_Move lstPreviewMethods, Up
+Private Sub cmdPreviewClass_Required_DeleteSelected_Click()
+    Access_Listbox_DeleteSelectedItem Me.Name, lstPreviewClass_Required
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
+End Sub
+Private Sub cmdPreviewClass_Required_MoveDown_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreviewClass_Required, Down
+    UpdateListBoxNavigationButtons Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
+
+End Sub
+Private Sub cmdPreviewClass_Required_MoveUp_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreviewClass_Required, Up
+End Sub
+
+'---------------------------------------------------------- PROPERTIES ---------------------------------------------
+Private Sub cmdProperty_Add_Click()
+    
+    'To-Do: Anpassen, so, dass auch die Daten für einen Fremdschlüssel abgefragt werden
+    
+    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
+    
+        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
+            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
+                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
+            Exit Sub
+        End If
+     
+        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreview_Properties", 0, txtAddPropertyName.Value) = False Then
+
+            lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
+                cmbAddPropertyType.Column(1)
+                
+            txtAddPropertyName.Value = ""
+            cmbAddPropertyType.Value = ""
+            
+            txtAddPropertyName.SetFocus
+            
+        Else
+        
+            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
+        
+        End If
+        
+    Else
+        
+        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
+        
+    End If
+
+End Sub
+Private Sub chkAddProperty_IsForeignKey_AfterUpdate()
+    
+    UpdateForeignKeyActivation
+
+End Sub
+Private Sub UpdateForeignKeyActivation()
+
+    If chkAddProperty_IsForeignKey = True Then
+        cmbAddProperty_Class_FK.Enabled = True
+        cmbAddProperty_Property_FK.Enabled = True
+    Else
+        cmbAddProperty_Class_FK.Enabled = False
+        cmbAddProperty_Property_FK.Enabled = False
+    End If
+    
 End Sub
 Private Sub cmdPreviewProperty_MoveDown_Click()
-    ListBox_Item_Move lstPreviewProperties, Down
+    Access_ListBox_MoveItem Me.Name, lstPreview_Properties, Down
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
 End Sub
 Private Sub cmdPreviewProperty_MoveUp_Click()
-    ListBox_Item_Move lstPreviewProperties, Up
+    Access_ListBox_MoveItem Me.Name, lstPreview_Properties, Up
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+End Sub
+Private Sub lstPreview_Properties_Click()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+End Sub
+Private Sub lstPreview_Properties_GotFocus()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+End Sub
+'---------------------------------------------------------- METHODS ---------------------------------------------
+Private Sub cmdMethod_Add_Click()
+
+
+    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
+    
+        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
+            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
+                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
+            Exit Sub
+        End If
+     
+        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreview_Properties", 0, txtAddPropertyName.Value) = False Then
+
+            lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
+                cmbAddPropertyType.Column(1)
+                
+            txtAddPropertyName.Value = ""
+            cmbAddPropertyType.Value = ""
+            
+            txtAddPropertyName.SetFocus
+            
+        Else
+        
+            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
+        
+        End If
+        
+    Else
+        
+        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
+        
+    End If
+
+End Sub
+Private Sub cmdPreviewMethod_MoveDown_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreview_Methods, Down
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+End Sub
+Private Sub cmdPreviewMethod_MoveUp_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreview_Methods, Up
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+End Sub
+Private Sub lstPreview_Methods_Click()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+End Sub
+Private Sub lstPreview_Methods_GotFocus()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+End Sub
+'---------------------------------------------------------- ENUMERATIONS ---------------------------------------------
+Private Sub cmdPreviewEnumeration_MoveDown_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreview_Enumeration, Down
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+Private Sub cmdPreviewEnumeration_MoveUp_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreview_Enumeration, Up
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+Private Sub lstEnumerations_Click()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+Private Sub lstEnumerations_GotFocus()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+'---------------------------------------------------------- TRANSLATION ---------------------------------------------
+Private Sub cmdPreviewTranslation_MoveDown_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreview_Translation, Down
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
+Private Sub cmdPreviewTranslation_MoveUp_Click()
+    Access_ListBox_MoveItem Me.Name, lstPreview_Translation, Up
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
+Private Sub lstPreview_Translation_Click()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
+Private Sub lstPreview_Translation_GotFocus()
+    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
+'---------------------------------------------------------- Class Create ---------------------------------------------
+Private Sub cmdClass_Create_Click()
+
+    Dim Class As New clsClass_Old
+
+    Dim Properties() As Variant
+    Dim Methods() As Variant
+    Dim Classes() As Variant
+    
+    Properties = Access_ListBox_Get_Array(Me.Name, "lstPreview_Properties")
+    Methods = Access_ListBox_Get_Array(Me.Name, "lstPreview_Methods")
+    Classes = Access_ListBox_Get_Array(Me.Name, "lstPreviewClass_Required")
+    
+    Class.Build Me.txtClassName.Value, Properties(), Methods(), Classes()
+    
+End Sub
+
+Private Sub ApplyDefaultSettings()
+'To-Do: alle Steuerelemente zurücksetzen, bei denen es nötig ist
+
+
+    cmbClassRequired_Add = ""
+
+    txtAddPropertyName = ""
+    txtAddMethodName = ""
+    txtClassName = ""
+    
+    optMethodAddTypeSub = False
+    optMethodAddTypeFunction = False
+    optMethodAddPrivate = False
+    optMethodAddPublic = False
+    
+    lstPreview_Properties.ColumnCount = 2
+    lstPreview_Methods.ColumnCount = 3
+    lstPreview_Packages.ColumnCount = 1
+    
+    Access_ListBox_Clear Me.Name, "lstPreview_Methods"
+    Access_ListBox_Clear Me.Name, "lstPreview_Properties"
+    Access_ListBox_Clear Me.Name, "lstPreviewClass_Required"
+    
 End Sub
 
 
-'#################################### Listbox - Auswahl #############################################
-Private Sub lstPreviewMethods_Click()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewMethods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-End Sub
-Private Sub lstPreviewMethods_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewMethods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-End Sub
-Private Sub lstPreviewProperties_Click()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewProperties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-End Sub
-Private Sub lstPreviewProperties_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewProperties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-End Sub
 
 Public Sub UpdateListBoxNavigationButtons( _
     strFormName As String, _
@@ -427,87 +522,89 @@ Public Sub SyncOptionFields( _
 
 End Sub
 
-Public Sub ListBox_Item_Move(objListBox As ListBox, Direction As enuDirection)
-'To-Do: Refactor
-    ' Verschiebt die markierte Zeile in einer mehrspaltigen Access-ListBox (Value List) um eine Position
-    ' Unterstützt beliebig viele Spalten – funktioniert nur mit RowSourceType = "Value List"
+'Public Sub ListBox_Item_Move(objListBox As ListBox, Direction As enuDirection)
+''To-Do: Refactor
+'    ' Verschiebt die markierte Zeile in einer mehrspaltigen Access-ListBox (Value List) um eine Position
+'    ' Unterstützt beliebig viele Spalten – funktioniert nur mit RowSourceType = "Value List"
+'
+'
+'    Dim intCols As Integer
+'    Dim intRows As Integer
+'    Dim intIndex As Integer
+'    Dim varData() As Variant
+'    Dim i As Long, j As Long
+'    Dim strRowSource As String
+'    Dim varTemp() As String
+'
+'    If objListBox.RowSourceType <> "Value List" Then
+'        MsgBox "Diese Funktion unterstützt nur ListBoxen mit RowSourceType = 'Value List'", vbExclamation
+'        Exit Sub
+'    End If
+'
+'    intCols = objListBox.ColumnCount
+'    intRows = objListBox.ListCount
+'
+'    ' Auswahl finden
+'    intIndex = -1
+'    For i = 0 To intRows - 1
+'        If objListBox.Selected(i) Then
+'            intIndex = i
+'            Exit For
+'        End If
+'    Next i
+'
+'    If intIndex = -1 Then Exit Sub ' nichts ausgewählt
+'    If Direction = enuDirection.Up And intIndex = 0 Then Exit Sub
+'    If Direction = enuDirection.Down And intIndex = intRows - 1 Then Exit Sub
+'
+'    ' Daten in Array kopieren
+'    ReDim varData(0 To intRows - 1, 0 To intCols - 1)
+'    For i = 0 To intRows - 1
+'        For j = 0 To intCols - 1
+'            varData(i, j) = objListBox.Column(j, i)
+'        Next j
+'    Next i
+'
+'    ' Zeilen tauschen
+'    Dim rowA As Long, rowB As Long
+'    If Direction = enuDirection.Up Then
+'        rowA = intIndex
+'        rowB = intIndex - 1
+'    Else
+'        rowA = intIndex
+'        rowB = intIndex + 1
+'    End If
+'
+'    Dim temp As Variant
+'    For j = 0 To intCols - 1
+'        temp = varData(rowA, j)
+'        varData(rowA, j) = varData(rowB, j)
+'        varData(rowB, j) = temp
+'    Next j
+'
+'    ' Neue RowSource erzeugen
+'    strRowSource = ""
+'    For i = 0 To intRows - 1
+'        ReDim varTemp(0 To intCols - 1)
+'        For j = 0 To intCols - 1
+'            varTemp(j) = Nz(varData(i, j), "")
+'        Next j
+'        strRowSource = strRowSource & Join(varTemp, ";") & ";"
+'    Next i
+'
+'    ' Letztes Semikolon entfernen
+'    If Right(strRowSource, 1) = ";" Then
+'        strRowSource = Left(strRowSource, Len(strRowSource) - 1)
+'    End If
+'
+'    objListBox.RowSource = strRowSource
+'
+'    ' Neuen Eintrag wieder markieren
+'    objListBox.Selected(rowB) = True
+'
+'    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+'    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+'
+'End Sub
 
-    
-    Dim intCols As Integer
-    Dim intRows As Integer
-    Dim intIndex As Integer
-    Dim varData() As Variant
-    Dim i As Long, j As Long
-    Dim strRowSource As String
-    Dim varTemp() As String
 
-    If objListBox.RowSourceType <> "Value List" Then
-        MsgBox "Diese Funktion unterstützt nur ListBoxen mit RowSourceType = 'Value List'", vbExclamation
-        Exit Sub
-    End If
-
-    intCols = objListBox.ColumnCount
-    intRows = objListBox.ListCount
-
-    ' Auswahl finden
-    intIndex = -1
-    For i = 0 To intRows - 1
-        If objListBox.Selected(i) Then
-            intIndex = i
-            Exit For
-        End If
-    Next i
-
-    If intIndex = -1 Then Exit Sub ' nichts ausgewählt
-    If Direction = enuDirection.Up And intIndex = 0 Then Exit Sub
-    If Direction = enuDirection.Down And intIndex = intRows - 1 Then Exit Sub
-
-    ' Daten in Array kopieren
-    ReDim varData(0 To intRows - 1, 0 To intCols - 1)
-    For i = 0 To intRows - 1
-        For j = 0 To intCols - 1
-            varData(i, j) = objListBox.Column(j, i)
-        Next j
-    Next i
-
-    ' Zeilen tauschen
-    Dim rowA As Long, rowB As Long
-    If Direction = enuDirection.Up Then
-        rowA = intIndex
-        rowB = intIndex - 1
-    Else
-        rowA = intIndex
-        rowB = intIndex + 1
-    End If
-
-    Dim temp As Variant
-    For j = 0 To intCols - 1
-        temp = varData(rowA, j)
-        varData(rowA, j) = varData(rowB, j)
-        varData(rowB, j) = temp
-    Next j
-
-    ' Neue RowSource erzeugen
-    strRowSource = ""
-    For i = 0 To intRows - 1
-        ReDim varTemp(0 To intCols - 1)
-        For j = 0 To intCols - 1
-            varTemp(j) = Nz(varData(i, j), "")
-        Next j
-        strRowSource = strRowSource & Join(varTemp, ";") & ";"
-    Next i
-
-    ' Letztes Semikolon entfernen
-    If Right(strRowSource, 1) = ";" Then
-        strRowSource = Left(strRowSource, Len(strRowSource) - 1)
-    End If
-
-    objListBox.RowSource = strRowSource
-
-    ' Neuen Eintrag wieder markieren
-    objListBox.Selected(rowB) = True
-    
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewMethods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewProperties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-    
-End Sub
