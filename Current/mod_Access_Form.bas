@@ -18,7 +18,8 @@ Private Sub Access_Form_Create_Add(strClassName As String, Properties() As Varia
 
     Access_Form_CreateNew strFormName
     Access_Form_Settings_PopUp strFormName
-    Access_Control_CreateFromArray strFormName, Translate_Properties_To_Controls(Properties())
+    'To-Do: Entkommentieren
+'    Access_Control_CreateFromArray strFormName, Translate_Properties_To_Controls(Properties())
     
     'Button für das Hinzufügen erstellen
 

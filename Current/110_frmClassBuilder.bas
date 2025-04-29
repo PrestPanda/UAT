@@ -19,6 +19,105 @@ Dim Log As New clsLog
 
 Dim arrSelectedPackages As String
 
+
+Private Sub cmdClass_Create_Click()
+
+    Dim Class As New clsClass_Old
+
+    Dim Properties() As Variant
+    Dim Methods() As Variant
+    Dim Classes() As Variant
+    
+    Properties = Access_ListBox_Get_Array(Me.Name, "lstPreviewProperties")
+    Methods = Access_ListBox_Get_Array(Me.Name, "lstPreviewMethods")
+    Classes = Access_ListBox_Get_Array(Me.Name, "lstPackage_Class_Required")
+    
+    Class.Build Me.txtClassName.Value, Properties(), Methods(), Classes()
+    
+End Sub
+
+Private Sub cmdRequiredClass_Add_Click()
+
+    'To-Do:
+    'Prüfen, ob die Klasse bereits der Listbox hinzugefügt wurde
+    'Wenn nicht: In die Listbox einfügen, Textbox leeren und Focus auf Textbox
+
+End Sub
+
+Private Sub cmdMethod_Add_Click()
+
+
+    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
+    
+        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
+            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
+                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
+            Exit Sub
+        End If
+     
+        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.Value) = False Then
+
+            lstPreviewProperties.AddItem txtAddPropertyName.Value & ";" & _
+                cmbAddPropertyType.Column(1)
+                
+            txtAddPropertyName.Value = ""
+            cmbAddPropertyType.Value = ""
+            
+            txtAddPropertyName.SetFocus
+            
+        Else
+        
+            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
+        
+        End If
+        
+    Else
+        
+        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
+        
+    End If
+
+End Sub
+
+Private Sub cmdProperty_Add_Click()
+    
+    'To-Do: Anpassen, so, dass auch die Daten für einen Fremdschlüssel abgefragt werden
+    
+    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
+    
+        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
+            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
+                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
+            Exit Sub
+        End If
+     
+        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.Value) = False Then
+
+            lstPreviewProperties.AddItem txtAddPropertyName.Value & ";" & _
+                cmbAddPropertyType.Column(1)
+                
+            txtAddPropertyName.Value = ""
+            cmbAddPropertyType.Value = ""
+            
+            txtAddPropertyName.SetFocus
+            
+        Else
+        
+            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
+        
+        End If
+        
+    Else
+        
+        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
+        
+    End If
+
+End Sub
+
+
+
+
 Private Sub Form_Load()
 
     Log.WriteLine "Class Builder geöffnet."
@@ -57,109 +156,6 @@ Private Sub ApplyDefaultSettings()
     Access_ListBox_Clear Me.Name, "lstPreviewMethods"
     Access_ListBox_Clear Me.Name, "lstPreviewProperties"
     
-End Sub
-Private Sub cmdAddProperty_Click()
-
-    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
-    
-        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
-            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
-                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
-            Exit Sub
-        End If
-     
-        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewProperties", 0, txtAddPropertyName.Value) = False Then
-
-            lstPreviewProperties.AddItem txtAddPropertyName.Value & ";" & _
-                cmbAddPropertyType.Column(1)
-                
-            txtAddPropertyName.Value = ""
-            cmbAddPropertyType.Value = ""
-            
-            txtAddPropertyName.SetFocus
-            
-        Else
-        
-            MsgBox "Eine Eigenschaft mit dem gleichen Namen wurde bereits hinzugefügt."
-        
-        End If
-        
-    Else
-        
-        MsgBox "Eines der Pflichtfelder wurde nicht befüllt."
-        
-    End If
-
-
-End Sub
-Private Sub cmdAddMethod_Click()
-
-    Dim strVisability As String
-    Dim strType As String
-
-    If optMethodAddPrivate = False And optMethodAddPublic = False Then
-        MsgBox "Bitte legen Sie die Sichbarkeit der Methode fest."
-        Exit Sub
-    End If
-    
-    If optMethodAddTypeFunction = False And optMethodAddTypeSub = False Then
-        MsgBox "Bitte legen Sie den Typ der Methode fest."
-    End If
-    
-    If txtAddMethodName <> "" Then
-    
-        If IsNull(DLookup("ID", "110_tblClassBuilder_Method_Draft", "Name = '" & txtAddMethodName & "'")) = False Then
-            MsgBox "Der Name der Methode ist bereits an eine andere Methode vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
-                "Bitte passen Sie den Namen der Methode an und probieren Sie es erneut."
-            Exit Sub
-        End If
-    
-        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreviewMethods", 0, txtAddMethodName) = False Then
-    
-            If optMethodAddPrivate = True Then strVisability = "Private"
-            If optMethodAddPublic = True Then strVisability = "Public"
-            
-            If optMethodAddTypeFunction = True Then strType = "Function"
-            If optMethodAddTypeSub = True Then strType = "Sub"
-    
-            
-             lstPreviewMethods.AddItem txtAddMethodName.Value & ";" & _
-                strType & ";" & strVisability
-                
-            txtAddMethodName.Value = ""
-            ApplyDefaultSettings
-            
-            txtAddMethodName.SetFocus
-        
-        Else
-        
-            MsgBox "Eine Methode mit diesem Namen wurde bereits hinzugefügt."
-        
-        End If
-        
-    Else
-    
-        MsgBox "Es wurde kein Name für die Methode vergeben."
-    
-    End If
-
-End Sub
-Private Sub cmdCreateClass_Click()
-
-    Dim Class As New clsClass_Old
-
-    Dim Properties() As Variant
-    Dim Methods() As Variant
-    Dim Classes() As Variant
-    
-    Properties = Access_ListBox_Get_Array(Me.Name, "lstPreviewProperties")
-    Methods = Access_ListBox_Get_Array(Me.Name, "lstPreviewMethods")
-    Classes = Access_ListBox_Get_Array(Me.Name, "lstPackage_Class_Required")
-    
-    Class.Build Me.txtClassName.Value, Properties(), Methods(), Classes()
-    
-
-
 End Sub
 Private Sub Load_Packages()
 
