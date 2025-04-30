@@ -15,7 +15,7 @@ Private Function AccessListBox_Get_Object_ByName( _
     End If
 
     Set frm = Forms(strFormName)
-
+    Set AccessListBox_Get_Object_ByName = frm.Controls(strListBoxName)
 
     Exit Function
 

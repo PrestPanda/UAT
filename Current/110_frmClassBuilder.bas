@@ -19,6 +19,8 @@ Dim Log As New clsLog
 
 Dim arrSelectedPackages As String
 
+
+
 Private Sub cmdReset_Click()
 
     ApplyDefaultSettings
@@ -288,9 +290,20 @@ Private Sub cmdProperty_Add_Click()
      
         If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreview_Properties", 0, txtAddPropertyName.Value) = False Then
 
-            lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
-                cmbAddPropertyType.Column(1)
+            If chkAddProperty_IsForeignKey = True Then
+            
+                'To-Do: Datentyp aus der Property der Klasse, die verknüoft werden soll
+                lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
+                    cmbAddPropertyType.Column(1)
+            
+            
+            Else
+
+                lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
+                    cmbAddPropertyType.Column(1)
                 
+            End If
+            
             txtAddPropertyName.Value = ""
             cmbAddPropertyType.Value = ""
             
@@ -312,7 +325,7 @@ End Sub
 Private Sub Reset_Properties()
 
     txtAddPropertyName = ""
-    lstPreview_Properties.ColumnCount = 2
+    lstPreview_Properties.ColumnCount = 4
     Access_ListBox_Clear Me.Name, "lstPreview_Properties"
 
 End Sub
@@ -321,14 +334,24 @@ Private Sub chkAddProperty_IsForeignKey_AfterUpdate()
     UpdateForeignKeyActivation
 
 End Sub
+Private Sub cmbAddProperty_Class_FK_AfterUpdate()
+
+    cmbAddProperty_Property_FK.Requery
+
+End Sub
 Private Sub UpdateForeignKeyActivation()
 
     If chkAddProperty_IsForeignKey = True Then
+    cmbAddPropertyType = ""
+    cmbAddPropertyType.Enabled = False
         cmbAddProperty_Class_FK.Enabled = True
         cmbAddProperty_Property_FK.Enabled = True
     Else
+        cmbAddProperty_Class_FK = ""
         cmbAddProperty_Class_FK.Enabled = False
+        cmbAddProperty_Property_FK = ""
         cmbAddProperty_Property_FK.Enabled = False
+        cmbAddPropertyType.Enabled = True
     End If
     
 End Sub
