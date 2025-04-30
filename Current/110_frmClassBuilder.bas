@@ -19,15 +19,6 @@ Dim Log As New clsLog
 
 Dim arrSelectedPackages As String
 
-
-
-
-
-
-
-
-
-
 Private Sub cmdReset_Click()
 
     ApplyDefaultSettings
@@ -45,8 +36,8 @@ Private Sub Form_Load()
     UpdateForeignKeyActivation
 
     
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
     
 
 End Sub
@@ -239,12 +230,16 @@ End Sub
 '---------------------------------------------------------- REQUIRED CLASS ---------------------------------------------
 Private Sub cmdRequiredClass_Add_Click()
 
-    If Access_ListBox_ContainsValue(Me.Name, "lstClass_Required", cmbClassRequired_Add.Value) = False Then
-                    
-        lstPreviewClass_Required.AddItem cmbClassRequired_Add.Value
-        cmbClassRequired_Add.Value = ""
-        cmbClassRequired_Add.SetFocus
-    
+    If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", cmbClassRequired_Add.Value) = False Then
+        If cmbClassRequired_Add.Value <> "" Then
+            lstPreviewClass_Required.AddItem cmbClassRequired_Add.Value
+            cmbClassRequired_Add.Value = ""
+            cmbClassRequired_Add.SetFocus
+        Else
+            MsgBox "Es wurde kein Wert eingetragen."
+            End
+        End If
+        
     Else
     
         MsgBox "Die Klasse wurde bereits hinzugefügt."
@@ -253,17 +248,29 @@ Private Sub cmdRequiredClass_Add_Click()
     End If
 
 End Sub
+Private Sub Reset_Class_Required()
+
+    cmbClassRequired_Add = ""
+    Access_ListBox_Clear Me.Name, "lstPreviewClass_Required"
+
+End Sub
 Private Sub cmdPreviewClass_Required_DeleteSelected_Click()
-    Access_Listbox_DeleteSelectedItem Me.Name, lstPreviewClass_Required
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
+    Access_Listbox_SelectedItem_Delete Me.Name, "lstPreviewClass_Required"
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
 End Sub
 Private Sub cmdPreviewClass_Required_MoveDown_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreviewClass_Required, Down
-    UpdateListBoxNavigationButtons Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, lstPreviewClass_Required, Down
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
 
 End Sub
 Private Sub cmdPreviewClass_Required_MoveUp_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreviewClass_Required, Up
+    Access_Listbox_SelectedItem_Move Me.Name, lstPreviewClass_Required, Up
+End Sub
+Private Sub lstPreviewClass_Required_Click()
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
+End Sub
+Private Sub lstPreviewClass_Required_GotFocus()
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreviewClass_Required", cmdPreviewClass_Required_MoveUp, cmdPreviewClass_Required_MoveDown
 End Sub
 
 '---------------------------------------------------------- PROPERTIES ---------------------------------------------
@@ -302,6 +309,13 @@ Private Sub cmdProperty_Add_Click()
     End If
 
 End Sub
+Private Sub Reset_Properties()
+
+    txtAddPropertyName = ""
+    lstPreview_Properties.ColumnCount = 2
+    Access_ListBox_Clear Me.Name, "lstPreview_Properties"
+
+End Sub
 Private Sub chkAddProperty_IsForeignKey_AfterUpdate()
     
     UpdateForeignKeyActivation
@@ -318,19 +332,22 @@ Private Sub UpdateForeignKeyActivation()
     End If
     
 End Sub
+Private Sub cmdPreviewProperties_DeleteSelected_Click()
+        Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Properties"
+End Sub
 Private Sub cmdPreviewProperty_MoveDown_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Properties, Down
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, lstPreview_Properties, Down
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
 End Sub
 Private Sub cmdPreviewProperty_MoveUp_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Properties, Up
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, lstPreview_Properties, Up
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
 End Sub
 Private Sub lstPreview_Properties_Click()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
 End Sub
 Private Sub lstPreview_Properties_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
 End Sub
 '---------------------------------------------------------- METHODS ---------------------------------------------
 Private Sub cmdMethod_Add_Click()
@@ -367,49 +384,98 @@ Private Sub cmdMethod_Add_Click()
     End If
 
 End Sub
+Private Sub Reset_Methods()
+
+    txtAddMethodName = ""
+    
+    Access_ListBox_Clear Me.Name, "lstPreview_Methods"
+    
+    optMethodAddTypeSub = False
+    optMethodAddTypeFunction = False
+    optMethodAddPrivate = False
+    optMethodAddPublic = False
+    
+End Sub
+Private Sub optMethodAddPrivate_AfterUpdate()
+    Access_OptionBox_Sync Me.Name, optMethodAddPrivate, optMethodAddPublic
+End Sub
+Private Sub optMethodAddPublic_AfterUpdate()
+    Access_OptionBox_Sync Me.Name, optMethodAddPublic, optMethodAddPrivate
+End Sub
+Private Sub optMethodAddTypeFunction_AfterUpdate()
+    Access_OptionBox_Sync Me.Name, optMethodAddTypeFunction, optMethodAddTypeSub
+End Sub
+Private Sub optMethodAddTypeSub_AfterUpdate()
+    Access_OptionBox_Sync Me.Name, optMethodAddTypeSub, optMethodAddTypeFunction
+End Sub
+Private Sub cmdPreviewMethods_DeleteSelected_Click()
+    Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Methods"
+End Sub
 Private Sub cmdPreviewMethod_MoveDown_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Methods, Down
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Methods", Down
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
 End Sub
 Private Sub cmdPreviewMethod_MoveUp_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Methods, Up
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Methods", Up
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
 End Sub
 Private Sub lstPreview_Methods_Click()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
 End Sub
 Private Sub lstPreview_Methods_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
 End Sub
 '---------------------------------------------------------- ENUMERATIONS ---------------------------------------------
+Private Sub Reset_Enumerations()
+
+    Access_ListBox_Clear Me.Name, "lstPreview_Enumeration"
+    txtEnumerationAdd_Name = ""
+    txtEnumerationAdd_Acronym = ""
+End Sub
+Private Sub cmdPreviewEnumerations_DeleteSelected_Click()
+    Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Enumeration"
+End Sub
 Private Sub cmdPreviewEnumeration_MoveDown_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Enumeration, Down
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Enumeration", Down
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
 End Sub
 Private Sub cmdPreviewEnumeration_MoveUp_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Enumeration, Up
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Enumeration", Up
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
 End Sub
 Private Sub lstEnumerations_Click()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
 End Sub
 Private Sub lstEnumerations_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
 End Sub
 '---------------------------------------------------------- TRANSLATION ---------------------------------------------
+Private Sub Reset_Translations()
+
+    txtEnumeration_Selected = ""
+    txtEnum_Value = ""
+    txtEnum_Translation = ""
+
+    Access_ListBox_Clear Me.Name, "lstPreview_Translation"
+    
+End Sub
+
+Private Sub cmdPreviewTranslations_DeleteSelected_Click()
+        Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Translation"
+End Sub
 Private Sub cmdPreviewTranslation_MoveDown_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Translation, Down
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Translation", Down
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
 End Sub
 Private Sub cmdPreviewTranslation_MoveUp_Click()
-    Access_ListBox_MoveItem Me.Name, lstPreview_Translation, Up
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Translation", Up
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
 End Sub
 Private Sub lstPreview_Translation_Click()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
 End Sub
 Private Sub lstPreview_Translation_GotFocus()
-    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
 End Sub
 '---------------------------------------------------------- Class Create ---------------------------------------------
 Private Sub cmdClass_Create_Click()
@@ -429,182 +495,17 @@ Private Sub cmdClass_Create_Click()
 End Sub
 
 Private Sub ApplyDefaultSettings()
-'To-Do: alle Steuerelemente zurücksetzen, bei denen es nötig ist
-
-
-    cmbClassRequired_Add = ""
-
-    txtAddPropertyName = ""
-    txtAddMethodName = ""
+    
     txtClassName = ""
     
-    optMethodAddTypeSub = False
-    optMethodAddTypeFunction = False
-    optMethodAddPrivate = False
-    optMethodAddPublic = False
-    
-    lstPreview_Properties.ColumnCount = 2
-    lstPreview_Methods.ColumnCount = 3
-    lstPreview_Packages.ColumnCount = 1
-    
-    Access_ListBox_Clear Me.Name, "lstPreview_Methods"
-    Access_ListBox_Clear Me.Name, "lstPreview_Properties"
-    Access_ListBox_Clear Me.Name, "lstPreviewClass_Required"
+    Reset_Class_Required
+    Reset_Properties
+    Reset_Methods
+    Reset_Enumerations
+    Reset_Translations
     
 End Sub
 
 
-
-Public Sub UpdateListBoxNavigationButtons( _
-    strFormName As String, _
-    strListBoxName As String, _
-    objButtonUp As Object, _
-    objButtonDown As Object)
-
-    ' Aktiviert oder deaktiviert die Buttons zum Verschieben eines Listbox-Eintrags je nach Auswahlposition
-    ' Der Zugriff auf die Steuerelemente erfolgt direkt über Forms(strFormName).Controls("...").Enabled
-
-    
-    Dim intIndex As Long
-    Dim intCount As Long
-
-    If Not CurrentProject.AllForms(strFormName).IsLoaded Then Exit Sub
-
-    intCount = Forms(strFormName).Controls(strListBoxName).ListCount
-    intIndex = Forms(strFormName).Controls(strListBoxName).ListIndex + 1
-
-    ' Wenn nichts ausgewählt oder Liste leer ? Buttons deaktivieren
-    If intCount = 0 Or Forms(strFormName).Controls(strListBoxName).ListIndex = -1 Then
-        Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
-        Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
-        Exit Sub
-    End If
-
-    ' Standardmäßig beide aktivieren
-    Forms(strFormName).Controls(objButtonUp.Name).Enabled = True
-    Forms(strFormName).Controls(objButtonDown.Name).Enabled = True
-
-    ' Randposition prüfen
-    If intIndex = 1 Then Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
-    If intIndex = intCount Then Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
-
-End Sub
-
-Private Sub optMethodAddPrivate_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddPrivate, optMethodAddPublic
-End Sub
-Private Sub optMethodAddPublic_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddPublic, optMethodAddPrivate
-End Sub
-Private Sub optMethodAddTypeFunction_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddTypeFunction, optMethodAddTypeSub
-End Sub
-Private Sub optMethodAddTypeSub_AfterUpdate()
-    SyncOptionFields Me.Name, optMethodAddTypeSub, optMethodAddTypeFunction
-End Sub
-Public Sub SyncOptionFields( _
-    strFormName As String, _
-    objChangedOption As Object, _
-    objOtherOption As Object)
-
-    ' Wenn das geänderte Optionsfeld aktiviert wurde,
-    ' wird das andere automatisch deaktiviert
-
-    
-    Dim frm As Access.Form
-    Set frm = Forms(strFormName)
-
-    If frm.Controls(objChangedOption.Name).Value = True Then
-        frm.Controls(objOtherOption.Name).Value = False
-    Else
-        frm.Controls(objOtherOption.Name).Value = True
-    End If
-
-End Sub
-
-'Public Sub ListBox_Item_Move(objListBox As ListBox, Direction As enuDirection)
-''To-Do: Refactor
-'    ' Verschiebt die markierte Zeile in einer mehrspaltigen Access-ListBox (Value List) um eine Position
-'    ' Unterstützt beliebig viele Spalten – funktioniert nur mit RowSourceType = "Value List"
-'
-'
-'    Dim intCols As Integer
-'    Dim intRows As Integer
-'    Dim intIndex As Integer
-'    Dim varData() As Variant
-'    Dim i As Long, j As Long
-'    Dim strRowSource As String
-'    Dim varTemp() As String
-'
-'    If objListBox.RowSourceType <> "Value List" Then
-'        MsgBox "Diese Funktion unterstützt nur ListBoxen mit RowSourceType = 'Value List'", vbExclamation
-'        Exit Sub
-'    End If
-'
-'    intCols = objListBox.ColumnCount
-'    intRows = objListBox.ListCount
-'
-'    ' Auswahl finden
-'    intIndex = -1
-'    For i = 0 To intRows - 1
-'        If objListBox.Selected(i) Then
-'            intIndex = i
-'            Exit For
-'        End If
-'    Next i
-'
-'    If intIndex = -1 Then Exit Sub ' nichts ausgewählt
-'    If Direction = enuDirection.Up And intIndex = 0 Then Exit Sub
-'    If Direction = enuDirection.Down And intIndex = intRows - 1 Then Exit Sub
-'
-'    ' Daten in Array kopieren
-'    ReDim varData(0 To intRows - 1, 0 To intCols - 1)
-'    For i = 0 To intRows - 1
-'        For j = 0 To intCols - 1
-'            varData(i, j) = objListBox.Column(j, i)
-'        Next j
-'    Next i
-'
-'    ' Zeilen tauschen
-'    Dim rowA As Long, rowB As Long
-'    If Direction = enuDirection.Up Then
-'        rowA = intIndex
-'        rowB = intIndex - 1
-'    Else
-'        rowA = intIndex
-'        rowB = intIndex + 1
-'    End If
-'
-'    Dim temp As Variant
-'    For j = 0 To intCols - 1
-'        temp = varData(rowA, j)
-'        varData(rowA, j) = varData(rowB, j)
-'        varData(rowB, j) = temp
-'    Next j
-'
-'    ' Neue RowSource erzeugen
-'    strRowSource = ""
-'    For i = 0 To intRows - 1
-'        ReDim varTemp(0 To intCols - 1)
-'        For j = 0 To intCols - 1
-'            varTemp(j) = Nz(varData(i, j), "")
-'        Next j
-'        strRowSource = strRowSource & Join(varTemp, ";") & ";"
-'    Next i
-'
-'    ' Letztes Semikolon entfernen
-'    If Right(strRowSource, 1) = ";" Then
-'        strRowSource = Left(strRowSource, Len(strRowSource) - 1)
-'    End If
-'
-'    objListBox.RowSource = strRowSource
-'
-'    ' Neuen Eintrag wieder markieren
-'    objListBox.Selected(rowB) = True
-'
-'    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
-'    UpdateListBoxNavigationButtons Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
-'
-'End Sub
 
 

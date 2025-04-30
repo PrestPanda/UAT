@@ -1,7 +1,7 @@
 Option Compare Database
 Option Explicit
 
-Private Function ListBox_Get_Object_ByName( _
+Private Function AccessListBox_Get_Object_ByName( _
     strFormName As String, _
     strListBoxName As String) As Access.ListBox
 
@@ -10,19 +10,18 @@ Private Function ListBox_Get_Object_ByName( _
     Dim frm As Access.Form
 
     If Not CurrentProject.AllForms(strFormName).IsLoaded Then
-        Set ListBox_Get_Object_ByName = Nothing
+        Set AccessListBox_Get_Object_ByName = Nothing
         Exit Function
     End If
 
     Set frm = Forms(strFormName)
 
-    On Error GoTo Fehler
-    Set ListBox_Get_Object_ByName = frm.Controls(strListBoxName)
+
     Exit Function
 
 Fehler:
     MsgBox "Die ListBox '" & strListBoxName & "' im Formular '" & strFormName & "' konnte nicht gefunden werden.", vbExclamation
-    Set ListBox_Get_Object_ByName = Nothing
+    Set AccessListBox_Get_Object_ByName = Nothing
 
 End Function
 Public Sub Access_ListBox_Clear( _
@@ -33,7 +32,7 @@ Public Sub Access_ListBox_Clear( _
 
     Dim objListBox As Access.ListBox
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then Exit Sub
 
@@ -55,7 +54,7 @@ Public Function Access_ListBox_Get_Array( _
     Dim intCol As Long
     Dim varResult() As Variant
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then
         Access_ListBox_Get_Array = Array()
@@ -91,7 +90,7 @@ Public Function Access_ListBox_Get_Array_Selected( _
     Dim i As Long, n As Long
     Dim arr() As String
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then
         Access_ListBox_Get_Array_Selected = Split("") ' leeres Array
@@ -124,7 +123,7 @@ Public Function Access_ListBox_SetDefaultSettings( _
 
     Dim objListBox As Access.ListBox
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then Exit Function
 
@@ -147,7 +146,7 @@ Public Sub Access_ListBox_Fill_FromArray( _
     Dim strRowSource As String
     Dim strRow As String
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then Exit Sub
 
@@ -212,7 +211,7 @@ Public Sub Access_ListBox_RemoveValue( _
     Dim blnDeleteRow As Boolean
     Dim j As Long
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then Exit Sub
 
@@ -267,7 +266,7 @@ Public Function Access_ListBox_ContainsValue( _
     Dim intColumnIndex As Integer
     Dim intTotalColumns As Integer
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then
         Access_ListBox_ContainsValue = False
@@ -298,7 +297,7 @@ Public Function Access_ListBox_ContainsValue_InColumn( _
     Dim i As Long
     Dim strCurrent As String
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then
         Access_ListBox_ContainsValue_InColumn = False
@@ -333,7 +332,7 @@ Public Function Access_ListBox_IsValueSelected( _
     Dim objListBox As Access.ListBox
     Dim lngIndex As Long
 
-    Set objListBox = ListBox_Get_Object_ByName(strFormName, strListBoxName)
+    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
     If objListBox Is Nothing Then
         Access_ListBox_IsValueSelected = False
@@ -357,43 +356,64 @@ Public Function Access_ListBox_IsValueSelected( _
     Access_ListBox_IsValueSelected = False
 
 End Function
-Public Sub Access_Listbox_DeleteSelectedItem(strFormName As String, strControlName As String)
-
-    ' Löscht das aktuell ausgewählte Element aus einer Listbox anhand des übergebenen Formular- und Steuerungsnamens
+Public Sub Access_Listbox_SelectedItem_Delete(strFormName As String, strControlName As String)
 
     Dim frmTarget As Form
-    Dim ctlListbox As Control
-    Dim varSelectedValue As Variant
+    Dim ctlListbox As ListBox
+    Dim intCols As Integer
+    Dim intRows As Integer
+    Dim intIndex As Integer
+    Dim i As Long, j As Long
+    Dim varData() As Variant
     Dim strRowSource As String
     Dim strNewRowSource As String
-    Dim varItem As Variant
+    Dim varTemp() As String
 
     Set frmTarget = Forms(strFormName)
     Set ctlListbox = frmTarget.Controls(strControlName)
-    
-    If ctlListbox.ItemsSelected.Count = 0 Then
-        MsgBox "Bitte wählen Sie zuerst einen Eintrag aus.", vbExclamation
+
+    If ctlListbox.RowSourceType <> "Value List" Then
+        MsgBox "Diese Funktion unterstützt nur ListBoxen mit RowSourceType = 'Value List'", vbExclamation
         Exit Sub
     End If
-    
-    varSelectedValue = ctlListbox.ItemData(ctlListbox.ItemsSelected(0))
-    strRowSource = ctlListbox.RowSource
-    strNewRowSource = ""
 
-    For Each varItem In Split(strRowSource, ";")
-        If Trim(varItem) <> Trim(varSelectedValue) Then
-            If strNewRowSource <> "" Then
-                strNewRowSource = strNewRowSource & ";"
-            End If
-            strNewRowSource = strNewRowSource & varItem
+    If ctlListbox.ItemsSelected.Count = 0 Then
+        MsgBox "Bitte wählen Sie eine Zeile aus.", vbExclamation
+        Exit Sub
+    End If
+
+    intCols = ctlListbox.ColumnCount
+    intRows = ctlListbox.ListCount
+    intIndex = ctlListbox.ItemsSelected(0)
+
+    ReDim varData(0 To intRows - 1, 0 To intCols - 1)
+    For i = 0 To intRows - 1
+        For j = 0 To intCols - 1
+            varData(i, j) = ctlListbox.Column(j, i)
+        Next j
+    Next i
+
+    strNewRowSource = ""
+    For i = 0 To intRows - 1
+        If i <> intIndex Then
+            ReDim varTemp(0 To intCols - 1)
+            For j = 0 To intCols - 1
+                varTemp(j) = Nz(varData(i, j), "")
+            Next j
+            strNewRowSource = strNewRowSource & Join(varTemp, ";") & ";"
         End If
-    Next varItem
+    Next i
+
+    If Right(strNewRowSource, 1) = ";" Then
+        strNewRowSource = Left(strNewRowSource, Len(strNewRowSource) - 1)
+    End If
 
     ctlListbox.RowSource = strNewRowSource
 
+
     
 End Sub
-Public Sub Access_ListBox_MoveItem(strFormName As String, _
+Public Sub Access_Listbox_SelectedItem_Move(strFormName As String, _
     strControlName As String, _
     enuDirection As enuDirection)
 
@@ -473,4 +493,38 @@ Public Sub Access_ListBox_MoveItem(strFormName As String, _
     objListBox.Selected(rowB) = True
 
     
+End Sub
+Public Sub Access_ListBox_MovingButtons_UpdateActivation( _
+    strFormName As String, _
+    strListBoxName As String, _
+    objButtonUp As Object, _
+    objButtonDown As Object)
+
+    ' Aktiviert oder deaktiviert die Buttons zum Verschieben eines Listbox-Eintrags je nach Auswahlposition
+    ' Der Zugriff auf die Steuerelemente erfolgt direkt über Forms(strFormName).Controls("...").Enabled
+
+    
+    Dim intIndex As Long
+    Dim intCount As Long
+
+    If Not CurrentProject.AllForms(strFormName).IsLoaded Then Exit Sub
+
+    intCount = Forms(strFormName).Controls(strListBoxName).ListCount
+    intIndex = Forms(strFormName).Controls(strListBoxName).ListIndex + 1
+
+    ' Wenn nichts ausgewählt oder Liste leer ? Buttons deaktivieren
+    If intCount = 0 Or Forms(strFormName).Controls(strListBoxName).ListIndex = -1 Then
+        Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
+        Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
+        Exit Sub
+    End If
+
+    ' Standardmäßig beide aktivieren
+    Forms(strFormName).Controls(objButtonUp.Name).Enabled = True
+    Forms(strFormName).Controls(objButtonDown.Name).Enabled = True
+
+    ' Randposition prüfen
+    If intIndex = 1 Then Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
+    If intIndex = intCount Then Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
+
 End Sub
