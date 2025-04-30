@@ -486,11 +486,20 @@ Private Sub cmdClass_Create_Click()
     Dim Methods() As Variant
     Dim Classes() As Variant
     
-    Properties = Access_ListBox_Get_Array(Me.Name, "lstPreview_Properties")
-    Methods = Access_ListBox_Get_Array(Me.Name, "lstPreview_Methods")
-    Classes = Access_ListBox_Get_Array(Me.Name, "lstPreviewClass_Required")
+    If txtClassName <> "" Then
     
-    Class.Build Me.txtClassName.Value, Properties(), Methods(), Classes()
+        Properties = Access_ListBox_Get_Array(Me.Name, "lstPreview_Properties")
+        Methods = Access_ListBox_Get_Array(Me.Name, "lstPreview_Methods")
+        Classes = Access_ListBox_Get_Array(Me.Name, "lstPreviewClass_Required")
+        
+        Class.Build Me.txtClassName.Value, Properties(), Methods(), Classes()
+    
+    Else
+    
+        MsgBox "Es wurde kein Name für die Klasse eingetragen."
+        End
+    
+    End If
     
 End Sub
 
