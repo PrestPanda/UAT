@@ -276,8 +276,7 @@ End Sub
 
 '---------------------------------------------------------- PROPERTIES ---------------------------------------------
 Private Sub cmdProperty_Add_Click()
-    
-    'To-Do: Anpassen, so, dass auch die Daten für einen Fremdschlüssel abgefragt werden
+
     
     If (txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "") Or _
         (txtAddPropertyName.Value <> "" And cmbAddProperty_Class_FK.Value <> "" And cmbAddProperty_Property_FK.Value <> "") Then
@@ -292,13 +291,15 @@ Private Sub cmdProperty_Add_Click()
 
             If chkAddProperty_IsForeignKey = True Then
             
+                If Right(txtAddPropertyName, 3) <> "_FK" Then txtAddPropertyName = txtAddPropertyName & "_FK"
+            
                 lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
                     DLookup("DataType", "tbl_Class_Property", "Class_FK = " & cmbAddProperty_Class_FK.Column(0) & _
                         " AND Name = '" & cmbAddProperty_Property_FK.Column(1) & "'") & ";" & _
                     cmbAddProperty_Class_FK.Column(1) & ";" & _
                     cmbAddProperty_Property_FK.Column(1)
                     
-                    
+                'Benötigter Verweis auf die Klasse
                 If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", cmbAddProperty_Class_FK.Column(1)) = False Then
                     lstPreviewClass_Required.AddItem cmbAddProperty_Class_FK.Column(1)
                 End If

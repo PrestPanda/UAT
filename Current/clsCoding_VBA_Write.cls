@@ -29,9 +29,12 @@ Public Function Get_Code_ClassModule(strClassName As String, _
     strClassModuleName = "cls" & strClassName
   
     strCode = Get_Code_ClassModule_Class_References(Classes()) & vbNewLine
-    strCode = strCode & vbNewLine & Get_Code_ClassModule_PrivateVariables(Properties()) & vbNewLine
-    strCode = strCode & vbNewLine & Get_Code_ClassModule_Properties(Properties()) & vbNewLine
-    strCode = strCode & vbNewLine & Get_Code_Module_Methods(strTableName, Properties(), Methods()) & vbNewLine
+    strCode = strCode & vbNewLine & _
+        Get_Code_ClassModule_PrivateVariables(Properties()) & vbNewLine
+    strCode = strCode & vbNewLine & _
+        Get_Code_ClassModule_Properties(Properties()) & vbNewLine
+    strCode = strCode & vbNewLine & _
+        Get_Code_Module_Methods(strTableName, Properties(), Methods()) & vbNewLine
 
     Get_Code_ClassModule = strCode
 
@@ -50,9 +53,11 @@ Public Function Get_Code_ClassModule_Class_References(Classes() As Variant) As S
         For lngCounter = LBound(Classes()) To UBound(Classes())
         
             If strCode = "" Then
-                strCode = Coding.Get_Class_Reference_DimensionStatement(Classes(lngCounter, 1)) & vbNewLine
+                strCode = Coding.Get_Class_Reference_DimensionStatement( _
+                    Classes(lngCounter, 1)) & vbNewLine
             Else
-            strCode = strCode & Coding.Get_Class_Reference_DimensionStatement(Classes(lngCounter, 1)) & vbNewLine
+            strCode = strCode & _
+                Coding.Get_Class_Reference_DimensionStatement(Classes(lngCounter, 1)) & vbNewLine
         
             End If
         
@@ -74,26 +79,28 @@ End Function
 Public Function Get_Code_ClassModule_PrivateVariables(Properties() As Variant) As String
 'Refactored
 
+    Dim lngCounter As Long
+
     Log.WriteLine "Code für private Variablen wird generiert."
     
     Dim strCode As String
 
     For lngCounter = LBound(Properties()) To UBound(Properties())
-    
+
         If strCode = "" Then
         
             strCode = strCode & _
-                Coding_VBA.Get_Code_PrivateVariable_AsString_ByString( _
+                Coding_VBA_Write.Get_Code_PrivateVariable_AsString_ByString( _
                     Properties(lngCounter, 1), _
                     Properties(lngCounter, 2))
         Else
         
             strCode = strCode & vbNewLine & _
-                Coding_VBA.Get_Code_PrivateVariable_AsString_ByString _
+                Coding_VBA_Write.Get_Code_PrivateVariable_AsString_ByString _
                     (Properties(lngCounter, 1), _
                     Properties(lngCounter, 2))
         End If
-   
+              
     Next
     
     Get_Code_ClassModule_PrivateVariables = strCode
@@ -111,6 +118,7 @@ ByVal strDataType As String) As String
              "Private", strName, strDataType)
 
 End Function
+
 '-------------------------------------------- CODE - Module - PROPERTIES -----------------------------------
 Public Function Get_Code_ClassModule_Properties(Properties() As Variant) As String
 'Refactored

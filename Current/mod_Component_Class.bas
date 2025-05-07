@@ -151,42 +151,6 @@ Public Sub Update_Class_Properties_ByClass(ByVal strClassName As String)
 
 End Sub
 
-
-'
-'Public Sub ExportAllClassProperties()
-''To Refactor
-'    ' Durchläuft alle Klassenmodule und gibt die Property-Namen jedes Moduls als formatierte String-Tabelle aus
-'
-'    Dim objComponent As VBIDE.VBComponent
-'    Dim strClassName As String
-'    Dim varProperties As Variant
-'    Dim strOutput As String
-'    Dim i As Long
-'
-'    For Each objComponent In Application.VBE.ActiveVBProject.VBComponents
-'        If objComponent.Type = vbext_ct_ClassModule Then
-'            strClassName = objComponent.Name
-'            varProperties = Access_Class_Module_Get_PropertyNames(strClassName)
-'
-'            strOutput = strOutput & "Klasse: " & strClassName & vbCrLf
-'
-'            If Not IsNull(varProperties) Then
-'                For i = LBound(varProperties) To UBound(varProperties)
-'                    strOutput = strOutput & "  - " & varProperties(i) & vbCrLf
-'                Next i
-'            Else
-'                strOutput = strOutput & "  (Keine Properties gefunden)" & vbCrLf
-'            End If
-'
-'            strOutput = strOutput & vbCrLf
-'        End If
-'
-'    Next objComponent
-'
-'    Debug.Print strOutput
-'
-'
-'End Sub
 Public Sub ExportAllClassMethods()
 'To Refactor
     ' Durchläuft alle Klassenmodule und gibt alle Methodennamen (Sub/Function) jedes Moduls formatiert aus

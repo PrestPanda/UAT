@@ -37,7 +37,7 @@ End Enum
 
 Public Function Get_Class_Reference_DimensionStatement(ByVal strName As String) As String
 
-    Get_Class_Reference_DimensionStatement = "Dim " & strName & " as new cls" & strName
+    Get_Class_Reference_DimensionStatement = "Dim " & strName & " as new " & strName
 
 End Function
 Public Function Get_Variable_DimensionStatement_ByEnum(Visibility As enuCoding_Visibility, strName As String, _

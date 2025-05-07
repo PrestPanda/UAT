@@ -39,7 +39,7 @@ Public Sub Build(strClassName As String, _
     
     
     'Create VBA Code
-    strVBACode = Coding_VBA.Get_Code_ClassModule(strClassName, Properties(), Methods(), Classes())
+    strVBACode = Coding_VBA_Write.Get_Code_ClassModule(strClassName, Properties(), Methods(), Classes())
     ClassModule_CreateNew "cls" & strClassName, strVBACode
    
      
