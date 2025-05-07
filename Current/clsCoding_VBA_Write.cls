@@ -9,7 +9,7 @@ Option Compare Database
 
 Private Coding_SQL As New clsCoding_SQL
 Private Coding As New clsCoding
-Private Coding_VBA As New clsCoding_VBA
+Private Coding_VBA_Write As New clsCoding_VBA_Write
 Private Format As New clsFormat
 Private Log As New clsLog
 
@@ -62,7 +62,7 @@ Public Function Get_Code_ClassModule_Class_References(Classes() As Variant) As S
     
     strCode = strCode & vbNewLine
     
-    Log.WriteLine "Code f?r Verweise auf Klassen wurde generiert."
+    Log.WriteLine "Code für Verweise auf Klassen wurde generiert."
     
     Get_Code_ClassModule_Class_References = strCode
 
@@ -74,7 +74,7 @@ End Function
 Public Function Get_Code_ClassModule_PrivateVariables(Properties() As Variant) As String
 'Refactored
 
-    Log.WriteLine "Code f?r private Variablen wird generiert."
+    Log.WriteLine "Code für private Variablen wird generiert."
     
     Dim strCode As String
 

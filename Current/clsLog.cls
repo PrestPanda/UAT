@@ -51,23 +51,31 @@ End Property
 Public Sub WriteText(strText As String)
     ' Fügt Text ohne Zeilenumbruch hinzu
     Forms(c_strForm_Log).txtLog.Value = Forms(c_strForm_Log).txtLog.Value & strText
+
+    ' Setzt den Fokus ans Ende der Textbox
+    Access_TextBox_MoveToEnd c_strForm_Log, "txtLog"
+
 End Sub
 
 Public Sub WriteLine(strText As String)
     ' Fügt eine Zeile mit Zeilenumbruch hinzu
     Forms(c_strForm_Log).txtLog.Value = Forms(c_strForm_Log).txtLog.Value & Get_WrapLine(strText) & vbCrLf
+
+    ' Setzt den Fokus ans Ende der Textbox
+    Access_TextBox_MoveToEnd c_strForm_Log, "txtLog"
+
 End Sub
 
 Public Sub WriteEmptyLine()
     ' Fügt eine leere Zeile hinzu
     Forms(c_strForm_Log).txtLog.Value = Forms(c_strForm_Log).txtLog.Value & vbCrLf
-End Sub
 
-Public Sub Write_Application_WelcomeMessage(strApplicationName As String)
-
-    WriteLine "Die Anwendung " & strApplicationName & " wurde gestartet. "
+    ' Setzt den Fokus ans Ende der Textbox
+    Access_TextBox_MoveToEnd c_strForm_Log, "txtLog"
 
 End Sub
+
+
 Public Sub Write_Form_Opened(strFormName As String)
 
     WriteLine Writing.Get_Message_Form_Opened(strFormName)

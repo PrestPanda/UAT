@@ -25,52 +25,189 @@ Fehler:
     Access_Class_Module_Exists = False
 
 End Function
-
 Public Function Access_Class_Module_Get_PropertyNames(strClassName As String) As Variant
 
-    ' Gibt ein Array mit allen Property-Namen aus dem angegebenen Klassenmodul zurück
+    ' Gibt ein Array mit eindeutigen Property-Namen zurück (ohne Datentyp).
+    ' Jede Property wird nur einmal aufgenommen (egal ob Get/Let/Set).
 
-    Dim objComponent As VBIDE.VBComponent
-    Dim objCodeModule As VBIDE.CodeModule
-    Dim lngLineCount As Long
+    Dim objModule As VBIDE.CodeModule
     Dim lngLine As Long
+    Dim lngLastLine As Long
     Dim strLineText As String
     Dim colProperties As Collection
-    Dim strPropertyName As String
-    Dim varResult() As String
+    Dim arrResult() As String
     Dim i As Long
 
-    Set objComponent = Application.VBE.ActiveVBProject.VBComponents(strClassName)
-    Set objCodeModule = objComponent.CodeModule
     Set colProperties = New Collection
 
-    lngLineCount = objCodeModule.CountOfLines
+    Set objModule = Application.VBE.ActiveVBProject.VBComponents(strClassName).CodeModule
+    lngLastLine = objModule.CountOfLines
 
-    For lngLine = 1 To lngLineCount
-        strLineText = Trim(objCodeModule.Lines(lngLine, 1))
+    For lngLine = 1 To lngLastLine
+        strLineText = Trim(objModule.Lines(lngLine, 1))
         
-        If strLineText Like "Public Property *" Or strLineText Like "Private Property *" Then
-            strPropertyName = GetPropertyNameFromLine(strLineText)
-            If Len(strPropertyName) > 0 Then
-                On Error Resume Next
-                colProperties.Add strPropertyName, strPropertyName ' doppelte ignorieren
-                On Error GoTo 0
+        ' Prüft auf Property Get / Let / Set
+        If (InStr(1, strLineText, "Property Get", vbTextCompare) > 0) Or _
+           (InStr(1, strLineText, "Property Let", vbTextCompare) > 0) Or _
+           (InStr(1, strLineText, "Property Set", vbTextCompare) > 0) Then
+           
+            Dim strPropertyName As String
+            Dim lngPosNameStart As Long
+            Dim lngPosAs As Long
+            
+            ' Property-Name extrahieren
+            lngPosNameStart = InStr(1, strLineText, "Property", vbTextCompare)
+            lngPosNameStart = InStr(lngPosNameStart + 8, strLineText, " ", vbTextCompare)
+            lngPosAs = InStr(1, strLineText, "As", vbTextCompare)
+            
+            If lngPosNameStart > 0 And lngPosAs > 0 Then
+                strPropertyName = Trim(Mid(strLineText, lngPosNameStart + 1, lngPosAs - lngPosNameStart - 1))
+                
+                ' Prüfen, ob Property schon in der Collection enthalten ist (einzigartig)
+                Dim blnExists As Boolean
+                blnExists = False
+                For i = 1 To colProperties.Count
+                    If colProperties(i) = strPropertyName Then
+                        blnExists = True
+                        Exit For
+                    End If
+                Next i
+
+                ' Wenn noch nicht enthalten, hinzufügen
+                If Not blnExists Then
+                    colProperties.Add strPropertyName
+                End If
             End If
+
         End If
     Next lngLine
 
+    ' Ergebnis-Array vorbereiten
     If colProperties.Count > 0 Then
-        ReDim varResult(0 To colProperties.Count - 1)
+        ReDim arrResult(0 To colProperties.Count - 1)
         For i = 1 To colProperties.Count
-            varResult(i - 1) = colProperties(i)
+            arrResult(i - 1) = colProperties(i)
         Next i
-        Access_Class_Module_Get_PropertyNames = varResult
+        Access_Class_Module_Get_PropertyNames = arrResult
     Else
         Access_Class_Module_Get_PropertyNames = Null
     End If
 
-    
 End Function
+
+'Public Function Access_Class_Module_Get_PropertyNamesAndTypes(strClassName As String) As Variant
+'
+'    ' Gibt ein Array mit Property-Namen und deren Datentyp zurück.
+'    ' Jedes Element ist ein 2D-Array: (0) = Name, (1) = Datentyp
+'
+'    Dim objModule As VBIDE.CodeModule
+'    Dim lngLine As Long
+'    Dim lngLastLine As Long
+'    Dim strLineText As String
+'    Dim colProperties As Collection
+'    Dim arrResult() As String
+'    Dim i As Long
+'
+'    Set colProperties = New Collection
+'
+'    Set objModule = Application.VBE.ActiveVBProject.VBComponents(strClassName).CodeModule
+'    lngLastLine = objModule.CountOfLines
+'
+'    For lngLine = 1 To lngLastLine
+'        strLineText = Trim(objModule.Lines(lngLine, 1))
+'
+'        ' Prüft auf Property Get oder Let/Set
+'        If (InStr(1, strLineText, "Property Get", vbTextCompare) > 0) Or _
+'           (InStr(1, strLineText, "Property Let", vbTextCompare) > 0) Or _
+'           (InStr(1, strLineText, "Property Set", vbTextCompare) > 0) Then
+'
+'            Dim strPropertyName As String
+'            Dim strDataType As String
+'            Dim lngPosNameStart As Long
+'            Dim lngPosAs As Long
+'
+'            ' Property-Name extrahieren
+'            lngPosNameStart = InStr(1, strLineText, "Property", vbTextCompare)
+'            lngPosNameStart = InStr(lngPosNameStart + 8, strLineText, " ", vbTextCompare)
+'            lngPosAs = InStr(1, strLineText, "As", vbTextCompare)
+'
+'            If lngPosNameStart > 0 And lngPosAs > 0 Then
+'                strPropertyName = Trim(Mid(strLineText, lngPosNameStart + 1, lngPosAs - lngPosNameStart - 1))
+'                strDataType = Trim(Mid(strLineText, lngPosAs + 2))
+'
+'                ' Zeilenumbruch entfernen, falls vorhanden
+'                strDataType = Replace(strDataType, vbCr, "")
+'                strDataType = Replace(strDataType, vbLf, "")
+'
+'                ' Füge als Array (Name, Datentyp) zur Collection hinzu
+'                Dim arrProperty(1) As String
+'                arrProperty(0) = strPropertyName
+'                arrProperty(1) = strDataType
+'                colProperties.Add arrProperty
+'            End If
+'
+'        End If
+'    Next lngLine
+'
+'    ' Ergebnis-Array vorbereiten
+'    If colProperties.Count > 0 Then
+'        ReDim arrResult(0 To colProperties.Count - 1, 0 To 1)
+'        For i = 1 To colProperties.Count
+'            arrResult(i - 1, 0) = colProperties(i)(0) ' Name
+'            arrResult(i - 1, 1) = colProperties(i)(1) ' Datentyp
+'        Next i
+'        Access_Class_Module_Get_PropertyNamesAndTypes = arrResult
+'    Else
+'        Access_Class_Module_Get_PropertyNamesAndTypes = Null
+'    End If
+'
+'End Function
+
+'Public Function Access_Class_Module_Get_PropertyNames(strClassName As String) As Variant
+'
+'     'Gibt ein Array mit allen Property-Namen aus dem angegebenen Klassenmodul zurück
+'
+'    Dim objComponent As VBIDE.VBComponent
+'    Dim objCodeModule As VBIDE.CodeModule
+'    Dim lngLineCount As Long
+'    Dim lngLine As Long
+'    Dim strLineText As String
+'    Dim colProperties As Collection
+'    Dim strPropertyName As String
+'    Dim varResult() As String
+'    Dim i As Long
+'
+'    Set objComponent = Application.VBE.ActiveVBProject.VBComponents(strClassName)
+'    Set objCodeModule = objComponent.CodeModule
+'    Set colProperties = New Collection
+'
+'    lngLineCount = objCodeModule.CountOfLines
+'
+'    For lngLine = 1 To lngLineCount
+'        strLineText = Trim(objCodeModule.Lines(lngLine, 1))
+'
+'        If strLineText Like "Public Property *" Or strLineText Like "Private Property *" Then
+'            strPropertyName = GetPropertyNameFromLine(strLineText)
+'            If Len(strPropertyName) > 0 Then
+'                On Error Resume Next
+'                colProperties.Add strPropertyName, strPropertyName ' doppelte ignorieren
+'                On Error GoTo 0
+'            End If
+'        End If
+'    Next lngLine
+'
+'    If colProperties.Count > 0 Then
+'        ReDim varResult(0 To colProperties.Count - 1)
+'        For i = 1 To colProperties.Count
+'            varResult(i - 1) = colProperties(i)
+'        Next i
+'        Access_Class_Module_Get_PropertyNames = varResult
+'    Else
+'        Access_Class_Module_Get_PropertyNames = Null
+'    End If
+'
+'
+'End Function
 Private Function GetPropertyNameFromLine(strLine As String) As String
 'To-Do: Rename
 

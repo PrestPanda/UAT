@@ -36,7 +36,6 @@ Private Sub Form_Load()
     Load_Packages
     ApplyDefaultSettings
     UpdateForeignKeyActivation
-
     
     Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Properties", cmdPreviewProperty_MoveUp, cmdPreviewProperty_MoveDown
     Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
@@ -280,7 +279,8 @@ Private Sub cmdProperty_Add_Click()
     
     'To-Do: Anpassen, so, dass auch die Daten für einen Fremdschlüssel abgefragt werden
     
-    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
+    If (txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "") Or _
+        (txtAddPropertyName.Value <> "" And cmbAddProperty_Class_FK.Value <> "" And cmbAddProperty_Property_FK.Value <> "") Then
     
         If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
             MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
@@ -292,11 +292,18 @@ Private Sub cmdProperty_Add_Click()
 
             If chkAddProperty_IsForeignKey = True Then
             
-                'To-Do: Datentyp aus der Property der Klasse, die verknüoft werden soll
                 lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
-                    cmbAddPropertyType.Column(1)
-            
-            
+                    DLookup("DataType", "tbl_Class_Property", "Class_FK = " & cmbAddProperty_Class_FK.Column(0) & _
+                        " AND Name = '" & cmbAddProperty_Property_FK.Column(1) & "'") & ";" & _
+                    cmbAddProperty_Class_FK.Column(1) & ";" & _
+                    cmbAddProperty_Property_FK.Column(1)
+                    
+                    
+                If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", cmbAddProperty_Class_FK.Column(1)) = False Then
+                    lstPreviewClass_Required.AddItem cmbAddProperty_Class_FK.Column(1)
+                End If
+                
+                
             Else
 
                 lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
@@ -306,6 +313,12 @@ Private Sub cmdProperty_Add_Click()
             
             txtAddPropertyName.Value = ""
             cmbAddPropertyType.Value = ""
+            chkAddProperty_IsForeignKey = False
+            cmbAddProperty_Property_FK = ""
+            cmbAddProperty_Class_FK = ""
+            
+            UpdateForeignKeyActivation
+            
             
             txtAddPropertyName.SetFocus
             
@@ -335,17 +348,26 @@ Private Sub chkAddProperty_IsForeignKey_AfterUpdate()
 
 End Sub
 Private Sub cmbAddProperty_Class_FK_AfterUpdate()
-
-    cmbAddProperty_Property_FK.Requery
+    
+    If cmbAddProperty_Class_FK.Value <> "" Then
+    
+        cmbAddProperty_Property_FK.Enabled = True
+        cmbAddProperty_Property_FK.Requery
+        
+    Else
+    
+        UpdateForeignKeyActivation
+        
+    End If
 
 End Sub
 Private Sub UpdateForeignKeyActivation()
 
     If chkAddProperty_IsForeignKey = True Then
-    cmbAddPropertyType = ""
-    cmbAddPropertyType.Enabled = False
+        cmbAddPropertyType = ""
+        cmbAddPropertyType.Enabled = False
         cmbAddProperty_Class_FK.Enabled = True
-        cmbAddProperty_Property_FK.Enabled = True
+        cmbAddProperty_Property_FK.Enabled = False
     Else
         cmbAddProperty_Class_FK = ""
         cmbAddProperty_Class_FK.Enabled = False
@@ -355,6 +377,9 @@ Private Sub UpdateForeignKeyActivation()
     End If
     
 End Sub
+'After Update für cmbAddPropertyClass
+'activate cmbAddPropertyClassPropertyFK
+
 Private Sub cmdPreviewProperties_DeleteSelected_Click()
         Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Properties"
 End Sub

@@ -7,7 +7,7 @@ Option Compare Database
 Dim Log As New clsLog
 Dim Coding As New clsCoding
 Dim Coding_SQL As New clsCoding_SQL
-Dim Coding_VBA As New clsCoding_VBA
+Dim Coding_VBA_Write As New clsCoding_VBA_Write
 
 
 

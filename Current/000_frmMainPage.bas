@@ -63,8 +63,3 @@ Private Sub cmdOpenClassBuilder_Click()
 
 End Sub
 
-Private Sub Form_Load()
-
-    Log.Write_Application_WelcomeMessage "UAT"
-
-End Sub
