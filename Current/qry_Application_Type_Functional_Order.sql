@@ -1,4 +1,0 @@
-SELECT tbl_Application_Type_Functional.ID AS Ausdr1, tbl_Application_Type_Functional.Name AS Ausdr2
-FROM tbl_Application_Type_Functional
-ORDER BY tbl_Application_Type_Functional.Order;
-

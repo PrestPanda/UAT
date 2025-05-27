@@ -1,0 +1,16 @@
+Form: Package_Management
+------------------------------------
+Name: txtPackageAdd_Name	Typ: TextBox
+Name: Bezeichnungsfeld1	Typ: Label
+Name: cmdPackage_Add	Typ: CommandButton
+Name: Bezeichnungsfeld3	Typ: Label
+Name: cmbPackageManage_Name	Typ: ComboBox
+Name: Bezeichnungsfeld6	Typ: Label
+Name: lstConnectedClasses	Typ: ListBox
+Name: Bezeichnungsfeld11	Typ: Label
+Name: txtClass_Create_Name	Typ: TextBox
+Name: Label14	Typ: Label
+Name: Label15	Typ: Label
+Name: Combo16	Typ: ComboBox
+Name: cmdClass_Create	Typ: CommandButton
+Name: cmdClass_	Typ: CommandButton

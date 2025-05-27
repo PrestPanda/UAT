@@ -2,7 +2,7 @@ Option Compare Database
 Option Explicit
 
 
-Public Function Get_Array_FromQuery(strQueryName As String) As Variant
+Public Function Get_Array_FromQuery(strQueryName As String) As Variant()
 
     ' Führt eine gespeicherte Access-Query aus und gibt das Ergebnis als 2D-Array zurück
 
@@ -17,6 +17,7 @@ Public Function Get_Array_FromQuery(strQueryName As String) As Variant
 
     Set db = CurrentDb
     Set rs = db.OpenRecordset(strQueryName, dbOpenSnapshot)
+    
 
     If rs.EOF Then
         Get_Array_FromQuery = Array() ' leeres Array

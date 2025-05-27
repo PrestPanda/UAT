@@ -21,6 +21,8 @@ Dim arrSelectedPackages As String
 
 
 
+
+
 Private Sub cmdReset_Click()
 
     ApplyDefaultSettings
@@ -64,23 +66,22 @@ Private Sub Load_Packages()
 
     lstPreview_Packages.RowSource = ""
     
-    varData = Get_Array_FromQuery("110_qryClassBuilder_Package_SORT")
+    varData = Get_Array_FromQuery("qry_Package_SORT")
 
     On Error GoTo ExitSub
     intRows = UBound(varData, 1)
     intCols = UBound(varData, 2)
     ' ? 2D-Array erkannt
 
-    For intRow = 1 To intRows
-        ReDim varRow(0 To intCols - 1)
-        For intCol = 1 To intCols
-            varRow(intCol - 1) = varData(intRow, intCol)
-        Next intCol
-        lstPreview_Packages.AddItem varRow(0)
-        For intCol = 1 To intCols - 1
-'            lstPackages.List(lstPackages.ListCount - 1, intCol) = varRow(intCol)
-        Next intCol
+    For intRow = 0 To intRows - 1
+    
+       
+        lstPreview_Packages.AddItem varData(intRow + 1, 2)
+        
+
+        
     Next intRow
+    
     Exit Sub
 
 ExitSub:
@@ -88,13 +89,14 @@ ExitSub:
     On Error Resume Next
 '    lstPackages.Clear
     For intRow = LBound(varData) To UBound(varData)
-        lstPreview_Packages.AddItem varData(intRow)
+        lstPreview_Packages.AddItem varData(intRow, 2)
     Next intRow
 
 End Sub
 Private Sub lstPreview_Packages_AfterUpdate()
 
     Dim Packages As Variant
+    Dim strSQL As String
     Dim lngCurrentPackage_ID As Long
     Dim strCurrentPackage_Name As String
     Dim blnCurrentPackage_Selected As Boolean
@@ -112,13 +114,16 @@ Private Sub lstPreview_Packages_AfterUpdate()
         For lngCounter_Packages = LBound(Packages) To UBound(Packages)
         
             strCurrentPackage_Name = Packages(lngCounter_Packages, 1)
-            lngCurrentPackage_ID = DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & strCurrentPackage_Name & "'")
+            lngCurrentPackage_ID = DLookup("ID", "tbl_Package", "Name = '" & strCurrentPackage_Name & "'")
             blnCurrentPackage_Selected = Access_ListBox_IsValueSelected(Me.Name, "lstPreview_Packages", 0, strCurrentPackage_Name)
             
-            'To-Do: Abhängigkeiten zu anderen Classen
+            
             Set rcsPackage_Class_Required = CurrentDb.OpenRecordset( _
-                "SELECT * FROM 110_tblClassBuilder_Package_Class_Required " & _
-                "WHERE Package_FK = " & lngCurrentPackage_ID)
+                "SELECT * FROM tbl_Class WHERE ID In(" & _
+                "SELECT Class_FK FROM tbl_Package_Class " & _
+                "WHERE Package_FK = " & lngCurrentPackage_ID & ")")
+                
+                
                 
             If rcsPackage_Class_Required.RecordCount > 0 Then
             
@@ -126,21 +131,39 @@ Private Sub lstPreview_Packages_AfterUpdate()
                 
                 Do
                 
+                    'Klassen des Pakets
                     If blnCurrentPackage_Selected = True Then
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = False Then
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("Name").Value) = False Then
                             'Eintrag hinzufügen
-                            lstPreviewClass_Required.AddItem rcsPackage_Class_Required.Fields("ClassName").Value
+                            lstPreviewClass_Required.AddItem rcsPackage_Class_Required.Fields("Name").Value
                         End If
                         
                     Else
                     
-                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("ClassName").Value) = True Then
+                        If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", _
+                                rcsPackage_Class_Required.Fields("Name").Value) = True Then
                             'Eintrag löschen
-                            Access_ListBox_RemoveValue Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("ClassName").Value
+                            Access_ListBox_RemoveValue Me.Name, "lstPreviewClass_Required", rcsPackage_Class_Required.Fields("Name").Value
                         End If
                     
                     End If
+                    
+                    
+                    
+
+                    
+                     
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     
                     
                     rcsPackage_Class_Required.MoveNext
@@ -151,10 +174,9 @@ Private Sub lstPreview_Packages_AfterUpdate()
 
 
             
-            'Eigenschaften des Pakets
-            Set rcsPackage_Properties = CurrentDb.OpenRecordset( _
-                "SELECT * FROM 110_tblClassBuilder_Property_Draft " & _
-                "WHERE Package_FK = " & lngCurrentPackage_ID)
+            'Eigenschaften der Klasse
+            Set rcsPackage_Properties = CurrentDb.OpenRecordset("SELECT * FROM tbl_Package_Property_Draft " & _
+                "WHERE Package_FK = " & lngCurrentPackage_ID, dbOpenSnapshot)
                 
             If rcsPackage_Properties.RecordCount > 0 Then
             
@@ -167,7 +189,7 @@ Private Sub lstPreview_Packages_AfterUpdate()
                         If Access_ListBox_ContainsValue(Me.Name, "lstPreview_Properties", rcsPackage_Properties.Fields("Name").Value) = False Then
                             'Eintrag hinzufügen
                             lstPreview_Properties.AddItem rcsPackage_Properties.Fields("Name").Value & ";" & _
-                                DLookup("name", "110_tblClassBuilder_Property_Type", "ID = " & rcsPackage_Properties.Fields("Type_FK").Value)
+                                DLookup("name", "tbl_Property_Type", "ID = " & rcsPackage_Properties.Fields("Type_FK").Value)
                         End If
                         
                     Else
@@ -189,9 +211,9 @@ Private Sub lstPreview_Packages_AfterUpdate()
             
             
             'Methoden des Pakets
-            Set rcsPackage_Methods = CurrentDb.OpenRecordset("SELECT * FROM 110_tblClassBuilder_Method_Draft " & _
-                "WHERE Package_FK = " & _
-                DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & strCurrentPackage_Name & "'"))
+            Set rcsPackage_Methods = CurrentDb.OpenRecordset("SELECT * FROM tbl_Package_Method_Draft " & _
+                "WHERE Package_FK = " & lngCurrentPackage_ID, dbOpenSnapshot)
+
                 
             If rcsPackage_Methods.RecordCount > 0 Then
             
@@ -203,8 +225,8 @@ Private Sub lstPreview_Packages_AfterUpdate()
                     
                         If Access_ListBox_ContainsValue(Me.Name, "lstPreview_Methods", rcsPackage_Methods.Fields("Name").Value) = False Then
                             lstPreview_Methods.AddItem rcsPackage_Methods.Fields("Name").Value & ";" & _
-                                DLookup("name", "110_tblClassBuilder_Visability", "ID = " & rcsPackage_Methods.Fields("Visability_FK").Value) & ";" & _
-                                DLookup("name", "110_tblClassBuilder_Method_Type", "ID = " & rcsPackage_Methods.Fields("Type_FK").Value)
+                                DLookup("name", "tbl_Visability", "ID = " & rcsPackage_Methods.Fields("Visability_FK").Value) & ";" & _
+                                DLookup("name", "tbl_Method_Type", "ID = " & rcsPackage_Methods.Fields("Type_FK").Value)
                         End If
                         
                     Else
@@ -222,6 +244,9 @@ Private Sub lstPreview_Packages_AfterUpdate()
                 
             
             End If
+            
+            
+           
         
         Next lngCounter_Packages
         
@@ -231,9 +256,9 @@ End Sub
 '---------------------------------------------------------- REQUIRED CLASS ---------------------------------------------
 Private Sub cmdRequiredClass_Add_Click()
 
-    If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", cmbClassRequired_Add.Value) = False Then
+    If Access_ListBox_ContainsValue(Me.Name, "lstPreviewClass_Required", cmbClassRequired_Add.Column(1)) = False Then
         If cmbClassRequired_Add.Value <> "" Then
-            lstPreviewClass_Required.AddItem cmbClassRequired_Add.Value
+            lstPreviewClass_Required.AddItem cmbClassRequired_Add.Column(1)
             cmbClassRequired_Add.Value = ""
             cmbClassRequired_Add.SetFocus
         Else
@@ -281,7 +306,7 @@ Private Sub cmdProperty_Add_Click()
     If (txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "") Or _
         (txtAddPropertyName.Value <> "" And cmbAddProperty_Class_FK.Value <> "" And cmbAddProperty_Property_FK.Value <> "") Then
     
-        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
+        If IsNull(DLookup("ID", "tbl_Package_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
             MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
                 "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
             Exit Sub
@@ -378,9 +403,6 @@ Private Sub UpdateForeignKeyActivation()
     End If
     
 End Sub
-'After Update für cmbAddPropertyClass
-'activate cmbAddPropertyClassPropertyFK
-
 Private Sub cmdPreviewProperties_DeleteSelected_Click()
         Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Properties"
 End Sub
@@ -401,22 +423,46 @@ End Sub
 '---------------------------------------------------------- METHODS ---------------------------------------------
 Private Sub cmdMethod_Add_Click()
 
+    Dim strType As String
+    Dim strVisabilty As String
 
-    If txtAddPropertyName.Value <> "" And cmbAddPropertyType.Value <> "" Then
+    If txtAddMethodName.Value <> "" Then
     
-        If IsNull(DLookup("ID", "110_tblClassBuilder_Property_Draft", "Name = '" & txtAddPropertyName.Value & "'")) = False Then
-            MsgBox "Der Name der Property ist bereits an eine andere Property vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
-                "Bitte passen Sie den Namen der Property an und probieren Sie es erneut."
+        If IsNull(DLookup("ID", "tbl_Package_Method_Draft", "Name = '" & txtAddMethodName.Value & "'")) = False Then
+            MsgBox "Der Name der Methode ist bereits an eine andere Methode vergeben worden, die Inhalt eines Pakets ist." & vbNewLine & _
+                "Bitte passen Sie den Namen der Methode an und probieren Sie es erneut."
             Exit Sub
         End If
+        
+        'Get Visability String
+        If optMethodAddPrivate = True Then
+            strVisabilty = "Private"
+        Else
+            If optMethodAddPublic = True Then
+                strVisabilty = "Public"
+            End If
+        End If
+        
+        'Get Type String
+        If optMethodAddTypeFunction = True Then
+            strType = "Function"
+        Else
+            
+            If optMethodAddTypeSub = True Then
+                strType = "Sub"
+            End If
+        End If
      
-        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreview_Properties", 0, txtAddPropertyName.Value) = False Then
+        If Access_ListBox_ContainsValue_InColumn(Me.Name, "lstPreview_Methods", 0, txtAddMethodName.Value) = False Then
 
-            lstPreview_Properties.AddItem txtAddPropertyName.Value & ";" & _
-                cmbAddPropertyType.Column(1)
+            lstPreview_Methods.AddItem txtAddMethodName.Value & ";" & _
+                strType & ";" & strVisabilty
                 
-            txtAddPropertyName.Value = ""
-            cmbAddPropertyType.Value = ""
+            txtAddMethodName.Value = ""
+            optMethodAddTypeSub = False
+            optMethodAddTypeFunction = False
+            optMethodAddPrivate = False
+            optMethodAddPublic = False
             
             txtAddPropertyName.SetFocus
             
@@ -474,58 +520,7 @@ End Sub
 Private Sub lstPreview_Methods_GotFocus()
     Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Methods", cmdPreviewMethod_MoveUp, cmdPreviewMethod_MoveDown
 End Sub
-'---------------------------------------------------------- ENUMERATIONS ---------------------------------------------
-Private Sub Reset_Enumerations()
 
-    Access_ListBox_Clear Me.Name, "lstPreview_Enumeration"
-    txtEnumerationAdd_Name = ""
-    txtEnumerationAdd_Acronym = ""
-End Sub
-Private Sub cmdPreviewEnumerations_DeleteSelected_Click()
-    Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Enumeration"
-End Sub
-Private Sub cmdPreviewEnumeration_MoveDown_Click()
-    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Enumeration", Down
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
-End Sub
-Private Sub cmdPreviewEnumeration_MoveUp_Click()
-    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Enumeration", Up
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
-End Sub
-Private Sub lstEnumerations_Click()
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
-End Sub
-Private Sub lstEnumerations_GotFocus()
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
-End Sub
-'---------------------------------------------------------- TRANSLATION ---------------------------------------------
-Private Sub Reset_Translations()
-
-    txtEnumeration_Selected = ""
-    txtEnum_Value = ""
-    txtEnum_Translation = ""
-
-    Access_ListBox_Clear Me.Name, "lstPreview_Translation"
-    
-End Sub
-
-Private Sub cmdPreviewTranslations_DeleteSelected_Click()
-        Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Translation"
-End Sub
-Private Sub cmdPreviewTranslation_MoveDown_Click()
-    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Translation", Down
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
-End Sub
-Private Sub cmdPreviewTranslation_MoveUp_Click()
-    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Translation", Up
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
-End Sub
-Private Sub lstPreview_Translation_Click()
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
-End Sub
-Private Sub lstPreview_Translation_GotFocus()
-    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
-End Sub
 '---------------------------------------------------------- Class Create ---------------------------------------------
 Private Sub cmdClass_Create_Click()
 
@@ -563,7 +558,63 @@ Private Sub ApplyDefaultSettings()
     Reset_Translations
     
 End Sub
+'################################ Enumerations / Translations ##################################
+'-------------------------------------- ENUMERATIONS ---------------------------------------------
+Private Sub Reset_Enumerations()
 
+    Access_ListBox_Clear Me.Name, "lstPreview_Enumeration"
+    txtEnumerationAdd_Name = ""
+    txtEnumerationAdd_Acronym = ""
+End Sub
+Private Sub cmdPreviewEnumerations_DeleteSelected_Click()
+    Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Enumeration"
+End Sub
+Private Sub cmdPreviewEnumeration_MoveDown_Click()
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Enumeration", Down
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+Private Sub cmdPreviewEnumeration_MoveUp_Click()
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Enumeration", Up
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+Private Sub lstEnumerations_Click()
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+Private Sub lstEnumerations_GotFocus()
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Enumeration", cmdPreviewEnumeration_MoveUp, cmdPreviewEnumeration_MoveDown
+End Sub
+Private Sub cmdEnum_Add_Click()
 
+    
+
+End Sub
+'---------------------------------------- TRANSLATION ---------------------------------------------
+Private Sub Reset_Translations()
+
+    txtEnumeration_Selected = ""
+    txtEnum_Value = ""
+    txtEnum_Translation = ""
+
+    Access_ListBox_Clear Me.Name, "lstPreview_Translation"
+    
+End Sub
+
+Private Sub cmdPreviewTranslations_DeleteSelected_Click()
+        Access_Listbox_SelectedItem_Delete Me.Name, "lstPreview_Translation"
+End Sub
+Private Sub cmdPreviewTranslation_MoveDown_Click()
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Translation", Down
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
+Private Sub cmdPreviewTranslation_MoveUp_Click()
+    Access_Listbox_SelectedItem_Move Me.Name, "lstPreview_Translation", Up
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
+Private Sub lstPreview_Translation_Click()
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
+Private Sub lstPreview_Translation_GotFocus()
+    Access_ListBox_MovingButtons_UpdateActivation Me.Name, "lstPreview_Translation", cmdPreviewTranslation_MoveUp, cmdPreviewTranslation_MoveDown
+End Sub
 
 

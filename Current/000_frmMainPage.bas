@@ -63,3 +63,9 @@ Private Sub cmdOpenClassBuilder_Click()
 
 End Sub
 
+Private Sub cmdPackageManager_Open_Click()
+
+    DoCmd.OpenForm "Package_Management"
+
+End Sub
+

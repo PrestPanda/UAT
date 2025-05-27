@@ -2,6 +2,8 @@ Option Compare Database
 Option Explicit
 
 Dim Log As New clsLog
+Dim objForm As Access.Form
+Dim objControl As Access.Control
 
 Public Sub Access_Form_Create_Standard(strClassName As String, Properties() As Variant)
 
@@ -37,7 +39,7 @@ Private Sub Access_Form_CreateNew(strFormName As String)
     DoCmd.Save acForm, objFormNew.Name
     strOldName = objFormNew.Name
     DoCmd.Close acForm, objFormNew.Name
-    Access_RenameForm strOldName, strFormName
+    Access_Form_Rename strOldName, strFormName
 
     Exit Sub
 
@@ -73,11 +75,9 @@ Fehler:
     MsgBox "Fehler beim Setzen der Formulareinstellungen: " & Err.Description, vbExclamation
 
 End Sub
-Public Sub Access_RenameForm( _
+Public Sub Access_Form_Rename( _
     strOldFormName As String, _
     strNewFormName As String)
-
-    ' Benennt ein vorhandenes Formular um
 
     On Error GoTo Fehler
 

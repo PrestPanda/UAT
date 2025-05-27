@@ -6,19 +6,21 @@ Option Compare Database
 Option Explicit
 
 Dim Coding_SQL As New clsCoding_SQL
+Dim Package As New clsPackage
 
 
 
 Private lngID As Long
 Private strName As String
-Private strDescription As String
-Private blnIsActive As Boolean
 Private datCreateTS As Date
 Private lngCreateUser_FK As Long
 Private datLastUpdateTS As Date
 Private lngLastUpdateUser_FK As Long
+Private blnIsActive As Boolean
 Private datLastActiveTS As Date
 Private lngLastActiveUser_FK As Long
+Private lngPackage_FK As Long
+Private blnRequired As Boolean
 
 Public Property Get ID() As Long
 
@@ -38,26 +40,6 @@ End Property
 Public Property Let Name(strName_1 As String)
 
     strName = strName_1
-
-End Property
-Public Property Get Description() As String
-
-    Description = strDescription
-
-End Property
-Public Property Let Description(strDescription_1 As String)
-
-    strDescription = strDescription_1
-
-End Property
-Public Property Get IsActive() As Boolean
-
-    IsActive = blnIsActive
-
-End Property
-Public Property Let IsActive(blnIsActive_1 As Boolean)
-
-    blnIsActive = blnIsActive_1
 
 End Property
 Public Property Get CreateTS() As Date
@@ -100,6 +82,16 @@ Public Property Let LastUpdateUser_FK(lngLastUpdateUser_FK_1 As Long)
     lngLastUpdateUser_FK = lngLastUpdateUser_FK_1
 
 End Property
+Public Property Get IsActive() As Boolean
+
+    IsActive = blnIsActive
+
+End Property
+Public Property Let IsActive(blnIsActive_1 As Boolean)
+
+    blnIsActive = blnIsActive_1
+
+End Property
 Public Property Get LastActiveTS() As Date
 
     LastActiveTS = datLastActiveTS
@@ -120,11 +112,54 @@ Public Property Let LastActiveUser_FK(lngLastActiveUser_FK_1 As Long)
     lngLastActiveUser_FK = lngLastActiveUser_FK_1
 
 End Property
+Public Property Get Package_FK() As Long
 
-Public Sub Delete()
+    Package_FK = lngPackage_FK
+
+End Property
+Public Property Let Package_FK(lngPackage_FK_1 As Long)
+
+    lngPackage_FK = lngPackage_FK_1
+
+End Property
+Public Property Get Required() As Boolean
+
+    Required = blnRequired
+
+End Property
+Public Property Let Required(blnRequired_1 As Boolean)
+
+    blnRequired = blnRequired_1
+
+End Property
+
+Public Sub Reset()
+
+    lngID = 0
+    strName = ""
+    datCreateTS = 0
+    lngCreateUser_FK = 0
+    datLastUpdateTS = 0
+    lngLastUpdateUser_FK = 0
+    blnIsActive = False
+    datLastActiveTS = 0
+    lngLastActiveUser_FK = 0
+    lngPackage_FK = 0
+    blnRequired = False
+
+End Sub
+
+Public Sub Load()
+
+    DB_Load
+
+End Sub
+Public Sub Save()
 
     If Exists = True Then
-        DB_Delete
+        DB_Update
+    Else
+        DB_Insert
     End If
 
 End Sub
@@ -141,9 +176,11 @@ Public Function Exists() As Boolean
     End If
 
 End Function
-Public Sub Load()
+Public Sub Delete()
 
-    DB_Load
+    If Exists = True Then
+        DB_Delete
+    End If
 
 End Sub
 Public Sub LoadByID(lngID_2 As Long)
@@ -151,30 +188,6 @@ Public Sub LoadByID(lngID_2 As Long)
     lngID = lngID_2
     Load
     
-
-End Sub
-Public Sub Reset()
-
-    lngID = 0
-    strName = ""
-    strDescription = ""
-    blnIsActive = False
-    datCreateTS = 0
-    lngCreateUser_FK = 0
-    datLastUpdateTS = 0
-    lngLastUpdateUser_FK = 0
-    datLastActiveTS = 0
-    lngLastActiveUser_FK = 0
-
-End Sub
-
-Public Sub Save()
-
-    If Exists = True Then
-        DB_Update
-    Else
-        DB_Insert
-    End If
 
 End Sub
 Private Sub DB_Activate()
@@ -195,7 +208,7 @@ Private Function DB_Check() As Boolean
     
     Else
     
-        If IsNull(DLookup("ID", "tbl_Application", "ID =" & lngID)) = False Then
+        If IsNull(DLookup("ID", "tbl_Package_Class", "ID =" & lngID)) = False Then
             DB_Check = True
         Else
             DB_Check = False
@@ -218,7 +231,7 @@ Private Sub DB_Delete()
 
     DoCmd.SetWarnings False
     
-    DoCmd.RunSQL "DELETE * FROM tbl_Application WHERE ID =" & lngID
+    DoCmd.RunSQL "DELETE * FROM tbl_Package_Class WHERE ID =" & lngID
     
     DoCmd.SetWarnings True
     
@@ -227,23 +240,23 @@ Private Sub DB_Delete()
 End Sub
 Private Sub DB_Insert()
 
-    If IsNull(DMax("ID", "tbl_Application")) = False Then
-        lngID = DMax("ID", "tbl_Application") + 1
+    If IsNull(DMax("ID", "tbl_Package_Class")) = False Then
+        lngID = DMax("ID", "tbl_Package_Class") + 1
     End If
     
-    blnIsActive = True
     datCreateTS = Now()
     datLastUpdateTS = Now()
+    blnIsActive = True
     
     DoCmd.SetWarnings False
     
-    DoCmd.RunSQL "INSERT INTO tbl_Application " & _
-        "(ID, Name, Description, IsActive, CreateTS, CreateUser_FK, LastUpdateTS, LastUpdateUser_FK, LastActiveTS, LastActiveUser_FK) " & _
-        "VALUES (" & lngID & ", '" & strName & "', '" & strDescription & "', " & CInt(blnIsActive) & ", " & Coding_SQL.Get_CDate_ByDate_AsString(datCreateTS) & ", " & lngCreateUser_FK & ", " & Coding_SQL.Get_CDate_ByDate_AsString(datLastUpdateTS) & ", " & lngLastUpdateUser_FK & ", " & Coding_SQL.Get_CDate_ByDate_AsString(datLastActiveTS) & ", " & lngLastActiveUser_FK & ")"
+    DoCmd.RunSQL "INSERT INTO tbl_Package_Class " & _
+        "(ID, Name, CreateTS, CreateUser_FK, LastUpdateTS, LastUpdateUser_FK, IsActive, LastActiveTS, LastActiveUser_FK, Package_FK, Required) " & _
+        "VALUES (" & lngID & ", '" & strName & "', " & Coding_SQL.Get_CDate_ByDate_AsString(datCreateTS) & ", " & lngCreateUser_FK & ", " & Coding_SQL.Get_CDate_ByDate_AsString(datLastUpdateTS) & ", " & lngLastUpdateUser_FK & ", " & CInt(blnIsActive) & ", " & Coding_SQL.Get_CDate_ByDate_AsString(datLastActiveTS) & ", " & lngLastActiveUser_FK & ", " & lngPackage_FK & ", " & CInt(blnRequired) & ")"
     
     DoCmd.SetWarnings True
     
-    lngID = DMax("ID", "tbl_Application")
+    lngID = DMax("ID", "tbl_Package_Class")
     
 
 End Sub
@@ -254,7 +267,7 @@ Private Sub DB_Load()
     
     If DB_Check = True Then
     
-        strSQL = "SELECT * FROM tbl_Application WHERE ID = " & lngID
+        strSQL = "SELECT * FROM tbl_Package_Class WHERE ID = " & lngID
     
         Reset
     
@@ -263,14 +276,15 @@ Private Sub DB_Load()
         If Not rs.EOF Then
             lngID = rs![ID]
             strName = rs![Name]
-            strDescription = rs![Description]
-            blnIsActive = rs![IsActive]
             datCreateTS = rs![CreateTS]
             lngCreateUser_FK = rs![CreateUser_FK]
             datLastUpdateTS = rs![LastUpdateTS]
             lngLastUpdateUser_FK = rs![LastUpdateUser_FK]
+            blnIsActive = rs![IsActive]
             datLastActiveTS = rs![LastActiveTS]
             lngLastActiveUser_FK = rs![LastActiveUser_FK]
+            lngPackage_FK = rs![Package_FK]
+            blnRequired = rs![Required]
         End If
     
         rs.Close
@@ -286,7 +300,7 @@ Private Sub DB_Update()
     
     DoCmd.SetWarnings False
     
-    DoCmd.RunSQL "UPDATE tbl_Application SET Name = '" & strName & "', Description = '" & strDescription & "', IsActive = " & CInt(blnIsActive) & ", CreateTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datCreateTS) & ", CreateUser_FK = " & lngCreateUser_FK & ", LastUpdateTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datLastUpdateTS) & ", LastUpdateUser_FK = " & lngLastUpdateUser_FK & ", LastActiveTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datLastActiveTS) & ", LastActiveUser_FK = " & lngLastActiveUser_FK & " WHERE ID = " & lngID
+    DoCmd.RunSQL "UPDATE tbl_Package_Class SET Name = '" & strName & "', CreateTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datCreateTS) & ", CreateUser_FK = " & lngCreateUser_FK & ", LastUpdateTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datLastUpdateTS) & ", LastUpdateUser_FK = " & lngLastUpdateUser_FK & ", IsActive = " & CInt(blnIsActive) & ", LastActiveTS = " & Coding_SQL.Get_CDate_ByDate_AsString(datLastActiveTS) & ", LastActiveUser_FK = " & lngLastActiveUser_FK & ", Package_FK = " & lngPackage_FK & ", Required = " & CInt(blnRequired) & " WHERE ID = " & lngID
     
     DoCmd.SetWarnings True
 
