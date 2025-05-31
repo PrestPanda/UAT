@@ -56,3 +56,11 @@ Name: EmptyCell98	Typ: EmptyCell
 Name: EmptyCell99	Typ: EmptyCell
 Name: EmptyCell100	Typ: EmptyCell
 Name: EmptyCell101	Typ: EmptyCell
+Name: EmptyCell104	Typ: EmptyCell
+Name: EmptyCell105	Typ: EmptyCell
+Name: EmptyCell106	Typ: EmptyCell
+Name: EmptyCell107	Typ: EmptyCell
+Name: Label108	Typ: Label
+Name: EmptyCell109	Typ: EmptyCell
+Name: EmptyCell110	Typ: EmptyCell
+Name: cmdClass_DeleteSelected	Typ: CommandButton

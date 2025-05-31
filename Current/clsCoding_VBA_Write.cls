@@ -199,7 +199,7 @@ Public Function Get_Code_Module_Methods(strTableName As String, _
     Dim strCodeAddition As String
     Dim lngCounter As Long
     
-    Log.WriteLine "Code f?r Methods wird generiert"
+    Log.WriteLine "Code für Methods wird generiert"
     
    For lngCounter = LBound(Methods()) To UBound(Methods())
     
@@ -579,7 +579,8 @@ Public Function Get_Code_Module_Method_Draft_DB_Insert_SetValues(strTableName As
     Get_Code_Module_Method_Draft_DB_Insert_SetValues = strCode
 
 End Function
-Public Function Get_Code_Module_Method_Draft_DB_Load(strTableName As String, Properties() As Variant) As String
+Public Function Get_Code_Module_Method_Draft_DB_Load(ByVal strTableName As String, _
+     Properties() As Variant) As String
 'Refactored
 
     Dim strCode As String
@@ -600,7 +601,11 @@ Public Function Get_Code_Module_Method_Draft_DB_Load(strTableName As String, Pro
             Properties(lngCounter, 1), _
             Properties(lngCounter, 2))
             
-        strCode = strCode & vbTab & "    " & strVarName & " = rs![" & Properties(lngCounter, 1) & "]" & vbCrLf
+        strCode = strCode & vbTab & "    " & strVarName & " = " & _
+            Get_Code_Wrap_VBA_Load_Property( _
+            CStr(Properties(lngCounter, 1)), _
+            CStr(Properties(lngCounter, 2))) & vbCrLf
+
         
     Next lngCounter
 
@@ -615,7 +620,8 @@ Public Function Get_Code_Module_Method_Draft_DB_Load(strTableName As String, Pro
 
 
 End Function
-Public Function Get_Code_Module_Method_Draft_DB_Update(strTableName As String, Properties() As Variant) As String
+Public Function Get_Code_Module_Method_Draft_DB_Update(strTableName As String, _
+    Properties() As Variant) As String
 'Refactored
 Dim strCode As String
 
@@ -680,5 +686,36 @@ Public Function Get_Code_Wrap_VBA_Method(Visability As enuCoding_Visibility, vtT
 
     
     Get_Code_Wrap_VBA_Method = strCode
+
+End Function
+Public Function Get_Code_Wrap_VBA_Load_Property( _
+    strFieldName As String, _
+    strDataType As String) As String
+
+    ' Gibt den Code zurück, um einen Datenbankfeldwert sicher zu lesen (inkl. Nz(...) je nach Typ).
+    
+    Dim strResult As String
+
+    Select Case strDataType
+    
+        Case "String", "Long String"
+            strResult = "Nz(rs![" & strFieldName & "], """")"
+            
+        Case "Byte", "Integer", "Long", "Double"
+            strResult = "Nz(rs![" & strFieldName & "], 0)"
+            
+        Case "Boolean"
+            strResult = "Nz(rs![" & strFieldName & "], False)"
+            
+        Case "Date"
+            strResult = "Nz(rs![" & strFieldName & "], #1/1/1900#)"
+            
+        Case Else
+            ' Standard-Fallback auf einfachen Nz-Wrapper
+            strResult = "Nz(rs![" & strFieldName & "])"
+            
+    End Select
+
+    Get_Code_Wrap_VBA_Load_Property = strResult
 
 End Function

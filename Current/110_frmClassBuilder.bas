@@ -23,6 +23,8 @@ Dim arrSelectedPackages As String
 
 
 
+
+
 Private Sub cmdReset_Click()
 
     ApplyDefaultSettings
@@ -119,7 +121,7 @@ Private Sub lstPreview_Packages_AfterUpdate()
             
             
             Set rcsPackage_Class_Required = CurrentDb.OpenRecordset( _
-                "SELECT * FROM tbl_Class WHERE ID In(" & _
+                "SELECT * FROM tbl_Class_Old WHERE ID In(" & _
                 "SELECT Class_FK FROM tbl_Package_Class " & _
                 "WHERE Package_FK = " & lngCurrentPackage_ID & ")")
                 
@@ -377,13 +379,20 @@ Private Sub cmbAddProperty_Class_FK_AfterUpdate()
     
     If cmbAddProperty_Class_FK.Value <> "" Then
     
-        cmbAddProperty_Property_FK.Enabled = True
+        cmbAddProperty_Property_FK.Locked = False
         cmbAddProperty_Property_FK.Requery
         
     Else
-    
+        
         UpdateForeignKeyActivation
         
+    End If
+
+End Sub
+Private Sub cmbAddProperty_Property_FK_AfterUpdate()
+
+    If cmbAddProperty_Class_FK <> "" And cmbAddProperty_Property_FK <> "" And txtAddPropertyName = "" Then
+        txtAddPropertyName = Replace(cmbAddProperty_Class_FK, "cls", "") & "_FK"
     End If
 
 End Sub
@@ -533,7 +542,7 @@ End Sub
 '---------------------------------------------------------- Class Create ---------------------------------------------
 Private Sub cmdClass_Create_Click()
 
-    Dim Class As New clsClass_Old
+    Dim Class As New clsClass
 
     Dim Properties() As Variant
     Dim Methods() As Variant

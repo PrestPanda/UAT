@@ -57,7 +57,9 @@ Fehler:
 End Function
 Public Function Array_GetFromSQL(strSQL As String) As Variant()
 
- ' Führt eine SQL-Abfrage aus und gibt das Ergebnis als 2D-Array zurück.
+
+
+    ' Führt eine SQL-Abfrage aus und gibt das Ergebnis als 1D- oder 2D-Array zurück, je nach Spaltenanzahl.
     
     Dim db As DAO.Database
     Dim rs As DAO.Recordset
@@ -69,33 +71,34 @@ Public Function Array_GetFromSQL(strSQL As String) As Variant()
     Set rs = db.OpenRecordset(strSQL, dbOpenSnapshot)
 
     If rs.EOF Then
-
-        rs.Close
-        Set rs = Nothing
-        Set db = Nothing
-        Array_GetFromSQL = varResults
+        rs.Close: Set rs = Nothing: Set db = Nothing
+        Array_GetFromSQL = Array()
         Exit Function
     End If
 
     lngCols = rs.Fields.Count
-    rs.MoveLast
-    lngRows = rs.RecordCount
-    rs.MoveFirst
+    rs.MoveLast: lngRows = rs.RecordCount: rs.MoveFirst
 
-    ReDim varResults(1 To lngRows, 1 To lngCols)
-
-    For lngRow = 1 To lngRows
-        For lngCol = 1 To lngCols
-            varResults(lngRow, lngCol) = rs.Fields(lngCol - 1).Value
-        Next lngCol
-        rs.MoveNext
-    Next lngRow
+    If lngCols = 1 Then
+        ReDim varResults(1 To lngRows)
+        For lngRow = 1 To lngRows
+            varResults(lngRow) = rs.Fields(0).Value
+            rs.MoveNext
+        Next lngRow
+    Else
+        ReDim varResults(1 To lngRows, 1 To lngCols)
+        For lngRow = 1 To lngRows
+            For lngCol = 1 To lngCols
+                varResults(lngRow, lngCol) = rs.Fields(lngCol - 1).Value
+            Next lngCol
+            rs.MoveNext
+        Next lngRow
+    End If
 
     Array_GetFromSQL = varResults
 
-    rs.Close
-    Set rs = Nothing
-    Set db = Nothing
+    rs.Close: Set rs = Nothing: Set db = Nothing
+
 
 
 End Function
