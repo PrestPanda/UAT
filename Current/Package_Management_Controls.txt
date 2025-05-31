@@ -64,3 +64,4 @@ Name: Label108	Typ: Label
 Name: EmptyCell109	Typ: EmptyCell
 Name: EmptyCell110	Typ: EmptyCell
 Name: cmdClass_DeleteSelected	Typ: CommandButton
+Name: cmdPackage_Delete	Typ: CommandButton

@@ -8,3 +8,4 @@ Name: Bezeichnungsfeld42	Typ: Label
 Name: cmdFormPopUpAdd	Typ: CommandButton
 Name: cmdPackageManager_Open	Typ: CommandButton
 Name: cmdOpenClassManager	Typ: CommandButton
+Name: cmdOpenCodeGenerator	Typ: CommandButton

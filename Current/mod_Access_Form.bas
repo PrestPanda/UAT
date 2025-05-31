@@ -48,6 +48,33 @@ Fehler:
 
 
 End Sub
+Public Sub Access_Form_Settings_Apply_Standard(strFormName As String)
+
+    Dim objForm As Access.Form
+
+    On Error GoTo Fehler
+
+    If Not CurrentProject.AllForms(strFormName).IsLoaded Then
+        DoCmd.OpenForm strFormName, acDesign
+    End If
+
+    Set objForm = Forms(strFormName)
+
+    With objForm
+        .RecordSelectors = False
+        .PopUp = True
+        .NavigationButtons = False
+    End With
+
+    DoCmd.Save acForm, strFormName
+    DoCmd.Close acForm, strFormName
+
+    Exit Sub
+
+Fehler:
+    MsgBox "Fehler beim Setzen der Formulareinstellungen: " & Err.Description, vbExclamation
+
+End Sub
 Public Sub Access_Form_Settings_PopUp(strFormName As String)
 
     Dim objForm As Access.Form

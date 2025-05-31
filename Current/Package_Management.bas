@@ -140,6 +140,22 @@ Private Sub Form_Update()
     Recalc
 
 End Sub
+Private Sub cmdPackage_Delete_Click()
+
+    If MsgBox("Sind sie wirklich sicher, das Sie das Paket löschen möchten?", _
+        vbYesNo, "Echt jetzt?") = vbYes Then
+        
+        Package.LoadByID cmbPackageManage_Name
+        Package.Delete
+    
+        cmbPackageManage_Name = ""
+        
+        Form_Update
+    
+    End If
+    
+
+End Sub
 
 Private Sub Form_Close()
 

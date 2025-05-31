@@ -1,0 +1,7 @@
+Form: 112_frmCodeGenerator
+------------------------------------
+Name: cmbClass	Typ: ComboBox
+Name: Label1	Typ: Label
+Name: cmbMethod	Typ: ComboBox
+Name: Label3	Typ: Label
+Name: cmdGenerateCode	Typ: CommandButton
