@@ -19,6 +19,12 @@ Private Sub cmbPackageManage_Name_AfterUpdate()
 
 End Sub
 
+Private Sub cmdClass_AddExisting_Click()
+
+    
+
+End Sub
+
 Private Sub cmdClass_Create_Click()
 
     DoCmd.OpenForm "110_frmClassBuilder", acNormal
@@ -33,12 +39,12 @@ Private Sub cmdPackage_Add_Click()
 
     Dim Package As New clsPackage
     
-    Log.WriteLine "Klasse " & txtPackageAdd_Name & " wird erstellt."
+    Log.WriteLine "Paket " & txtPackageAdd_Name & " wird erstellt."
     
     Package.Name = txtPackageAdd_Name
     Package.Save
     
-    Log.WriteLine "Klasse " & txtPackageAdd_Name & " wurde erstellt."
+    Log.WriteLine "Paket " & txtPackageAdd_Name & " wurde erstellt."
     
 
     Form_Clear
@@ -56,17 +62,47 @@ Private Sub Form_Clear()
 End Sub
 Private Sub Form_Update()
 
-    If cmbPackageManage_Name.Value <> "" Then
+    Dim varData As Variant
 
+    If cmbPackageManage_Name.Value <> "" Then
+    
+        'Klassen
+        
+            Access_ListBox_Fill_FromArray Me.Name, _
+                "lstConnectedClasses", _
+                Array_GetFromSQL( _
+                    "SELECT Name FROM tbl_Package_Class " & _
+                    "WHERE Package_FK = " & cmbPackageManage_Name.Value)
+
+        'Standard Properties
         Access_ListBox_Fill_FromArray Me.Name, _
-            "lstConnectedClasses", _
+            "lstConnectedProperties", _
             Array_GetFromSQL( _
-                "SELECT ID, Name FROM tbl_Package_Class " & _
+                "SELECT Name FROM tbl_Package_Property_Draft " & _
+                "WHERE Package_FK = " & cmbPackageManage_Name.Value)
+                
+        'Standard Methods
+        Access_ListBox_Fill_FromArray Me.Name, _
+            "lstConnectedProperties", _
+            Array_GetFromSQL( _
+                "SELECT Name FROM tbl_Package_Method_Draft " & _
                 "WHERE Package_FK = " & cmbPackageManage_Name.Value)
         
     End If
     
     Requery
     Recalc
+
+End Sub
+
+Private Sub Form_Close()
+
+    Log.WriteLine "Paketmanager geschlossen."
+
+End Sub
+
+Private Sub Form_Load()
+
+    Log.WriteLine "Paketmanager geöffnet."
 
 End Sub

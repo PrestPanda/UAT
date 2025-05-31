@@ -42,13 +42,11 @@ Public Sub Build(strClassName As String, _
     strVBACode = Coding_VBA_Write.Get_Code_ClassModule(strClassName, Properties(), Methods(), Classes())
     ClassModule_CreateNew "cls" & strClassName, strVBACode
    
-     
     'Create Table
     DoCmd.RunSQL Coding_SQL.Get_DB_CreateTable("tbl_" & strClassName, Properties())
     
-    
-    'Erstelle die Standardformulare
-    Access_Form_Create_Standard strClassName, Properties()
+    'Create Standardforms
+    'Access_Form_Create_Standard strClassName, Properties()
     
     
     Log.WriteLine "Klasse wurde erstellt."

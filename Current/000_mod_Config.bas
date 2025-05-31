@@ -7,3 +7,6 @@ Public Const Config_Git_PathRepo As String = "C:\Users\Prest\Desktop\JCs Ultimat
 
 Public Const Config_Application_ID As Long = 1
 Public Const Config_Application_Part_ID As Long = 1
+
+
+Public Const Config_Log_DevelopmentMode As Boolean = True

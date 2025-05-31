@@ -63,6 +63,12 @@ Private Sub cmdOpenClassBuilder_Click()
 
 End Sub
 
+Private Sub cmdOpenClassManager_Click()
+
+    DoCmd.OpenForm "111_frmClassManager", acNormal
+
+End Sub
+
 Private Sub cmdPackageManager_Open_Click()
 
     DoCmd.OpenForm "Package_Management"

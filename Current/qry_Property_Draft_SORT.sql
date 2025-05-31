@@ -1,0 +1,4 @@
+SELECT tbl_Package_Property_Draft.ID, tbl_Package_Property_Draft.Name
+FROM tbl_Package_Property_Draft
+ORDER BY tbl_Package_Property_Draft.Name;
+

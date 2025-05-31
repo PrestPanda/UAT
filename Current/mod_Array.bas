@@ -73,6 +73,7 @@ Public Function Array_GetFromSQL(strSQL As String) As Variant()
         rs.Close
         Set rs = Nothing
         Set db = Nothing
+        Array_GetFromSQL = varResults
         Exit Function
     End If
 

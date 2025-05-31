@@ -2,7 +2,7 @@ VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "Form_110_frmClassBuilder"
+Attribute VB_Name = "Form_111_frmClassManager"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = True
 Attribute VB_PredeclaredId = True
@@ -10,10 +10,7 @@ Attribute VB_Exposed = False
 Option Compare Database
 Option Explicit
 
-Public Enum enuDirection
-    Up
-    Down
-End Enum
+
 
 Dim Log As New clsLog
 
@@ -558,8 +555,7 @@ End Sub
 
 Private Sub ApplyDefaultSettings()
     
-    txtClassName = ""
-    
+     
     Reset_Class_Required
     Reset_Properties
     Reset_Methods

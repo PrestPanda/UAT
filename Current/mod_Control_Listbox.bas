@@ -132,8 +132,8 @@ Public Function Access_ListBox_SetDefaultSettings( _
 
 End Function
 Public Sub Access_ListBox_Fill_FromArray( _
-    strFormName As String, _
-    strListBoxName As String, _
+    ByVal strFormName As String, _
+    ByVal strListBoxName As String, _
     varData() As Variant)
 
     ' Füllt eine ListBox mit den Einträgen aus einem Array (1D oder 2D)
@@ -146,41 +146,51 @@ Public Sub Access_ListBox_Fill_FromArray( _
     Dim strRowSource As String
     Dim strRow As String
 
-    Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
+    If Array_HasEntries(varData) = True Then
+    
+        Set objListBox = AccessListBox_Get_Object_ByName(strFormName, strListBoxName)
 
-    If objListBox Is Nothing Then Exit Sub
-
-    Access_ListBox_Clear strFormName, strListBoxName
-
-    On Error GoTo ExitSub
-
-    intRows = UBound(varData, 1)
-    intCols = UBound(varData, 2)
-
-    ' 2D-Array erkannt ? RowSource zusammenbauen
-    For intRow = 1 To intRows
-        strRow = ""
-        For intCol = 1 To intCols
-            strRow = strRow & Nz(varData(intRow, intCol), "") & ";"
-        Next intCol
-        ' Semikolon am Ende entfernen
-        If Right(strRow, 1) = ";" Then
-            strRow = Left(strRow, Len(strRow) - 1)
+        If objListBox Is Nothing Then Exit Sub
+    
+        Access_ListBox_Clear strFormName, strListBoxName
+    
+        On Error GoTo ExitSub
+    
+        intRows = UBound(varData, 1)
+        intCols = UBound(varData, 2)
+    
+        ' 2D-Array erkannt ? RowSource zusammenbauen
+        For intRow = 1 To intRows
+            strRow = ""
+            For intCol = 1 To intCols
+                strRow = strRow & Nz(varData(intRow, intCol), "") & ";"
+            Next intCol
+            ' Semikolon am Ende entfernen
+            If Right(strRow, 1) = ";" Then
+                strRow = Left(strRow, Len(strRow) - 1)
+            End If
+            strRowSource = strRowSource & strRow & ";"
+        Next intRow
+    
+        ' Gesamte RowSource setzen
+        If Len(strRowSource) > 0 Then
+            If Right(strRowSource, 1) = ";" Then
+                strRowSource = Left(strRowSource, Len(strRowSource) - 1)
+            End If
         End If
-        strRowSource = strRowSource & strRow & ";"
-    Next intRow
-
-    ' Gesamte RowSource setzen
-    If Len(strRowSource) > 0 Then
-        If Right(strRowSource, 1) = ";" Then
-            strRowSource = Left(strRowSource, Len(strRowSource) - 1)
-        End If
+    
+        objListBox.RowSourceType = "Value List"
+        objListBox.RowSource = strRowSource
+    
+        Exit Sub
+    
+    Else
+    
+        Access_ListBox_Clear strFormName, strListBoxName
+    
     End If
 
-    objListBox.RowSourceType = "Value List"
-    objListBox.RowSource = strRowSource
-
-    Exit Sub
+    
 
 ExitSub:
     ' Falls Fehler (z.B. 1D-Array), mit AddItem arbeiten
@@ -191,6 +201,8 @@ ExitSub:
     For intRow = LBound(varData) To UBound(varData)
         objListBox.AddItem varData(intRow)
     Next intRow
+    
+
 
 End Sub
 
@@ -526,5 +538,27 @@ Public Sub Access_ListBox_MovingButtons_UpdateActivation( _
     ' Randposition prüfen
     If intIndex = 1 Then Forms(strFormName).Controls(objButtonUp.Name).Enabled = False
     If intIndex = intCount Then Forms(strFormName).Controls(objButtonDown.Name).Enabled = False
+
+End Sub
+Public Sub Access_Listbox_Settings_ApplyStandard(ByVal strFormName As String)
+
+    ' Setzt alle Listboxen im angegebenen Formular auf den RowSourceType "Value List"
+    ' und leert ihre RowSource, um eine manuelle Werteliste zu ermöglichen.
+
+    Dim objForm As Form
+    Dim objControl As Control
+
+    DoCmd.OpenForm strFormName, acDesign, , , , acHidden
+    Set objForm = Forms(strFormName)
+
+    For Each objControl In objForm.Controls
+        If objControl.ControlType = acListBox Then
+            objControl.RowSourceType = "Value List"
+            objControl.RowSource = ""
+        End If
+    Next objControl
+
+    DoCmd.Save
+    DoCmd.Close acForm, strFormName, acSaveNo
 
 End Sub

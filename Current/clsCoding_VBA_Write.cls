@@ -203,13 +203,13 @@ Public Function Get_Code_Module_Methods(strTableName As String, _
     
    For lngCounter = LBound(Methods()) To UBound(Methods())
     
-        If IsNull(DLookup("Name", "110_tblClassBuilder_Method_Draft", _
+        If IsNull(DLookup("Name", "tbl_Package_Method_Draft", _
             "Name = '" & Methods(lngCounter, 1) & "'")) = False Then
             
             'Code der Standardmethode in den Wrap einf?gen
             strCodeAddition = Get_Code_Module_Method_Draft( _
                 strTableName, _
-                DLookup("Name", "110_tblClassBuilder_Method_Draft", _
+                DLookup("Name", "tbl_Package_Method_Draft", _
                 "Name = '" & Methods(lngCounter, 1) & "'"), Properties())
             
         Else
@@ -241,20 +241,20 @@ Public Function Get_Code_Module_Method_Draft(strTableName As String, _
     Properties() As Variant) As String
 'Refactored
 
-    Select Case DLookup("Package_FK", "110_tblCLassBuilder_Method_Draft", "Name = '" & strDraftName & "'")
+    Select Case DLookup("Package_FK", "tbl_Package_Method_Draft", "Name = '" & strDraftName & "'")
     
-        Case DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & "DB" & "'")
+        Case DLookup("ID", "tbl_Package", "Name = '" & "DB" & "'")
             Get_Code_Module_Method_Draft = _
                 Get_Code_Module_Method_Draft_DB(strTableName, strDraftName, Properties())
         
-        Case DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & "Standard" & "'")
+        Case DLookup("ID", "tbl_Package", "Name = '" & "Standard" & "'")
             Get_Code_Module_Method_Draft = _
                 Get_Code_Module_Method_Draft_Standard(strTableName, strDraftName, Properties())
                 
-        Case DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & "Tracking" & "'")
+        Case DLookup("ID", "tbl_Package", "Name = '" & "Tracking" & "'")
         
         
-        Case DLookup("ID", "110_tblClassBuilder_Package", "Name = '" & "DEV" & "'")
+        Case DLookup("ID", "tbl_Package", "Name = '" & "DEV" & "'")
         
     
     End Select
